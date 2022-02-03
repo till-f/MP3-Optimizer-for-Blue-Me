@@ -6,12 +6,33 @@
         xmlns:local="clr-namespace:Mp3Detag"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
-            <Label Content="Drive:"/>
-            <TextBox Name="DrivePath" Width="100" Margin="10, 0"/>
-            <Button Content="Apply" Padding="10,0" Click="ApplyButton_Click"></Button>
-        </StackPanel>
+    <DockPanel>
+        <Grid DockPanel.Dock="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Path:"/>
+                <TextBox Grid.Column="1" Name="WorkingPath" Width="Auto" Margin="10, 0" VerticalContentAlignment="Center" Text="C:\Data\Temp\mp3s"/>
+                <Button Grid.Column="2" Content="Apply" Padding="10,0" Click="ApplyButton_Click"/>
+            </Grid>
 
-    </Grid>
+        </Grid>
+        <Grid>
+
+        </Grid>
+    </DockPanel>
 </Window>

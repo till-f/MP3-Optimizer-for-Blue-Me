@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using TagLib;
+using File = System.IO.File;
 
 namespace Mp3Detag.Core
 {
@@ -62,19 +63,26 @@ namespace Mp3Detag.Core
 
         var mp3File = TagLib.File.Create(mp3FilePath);
 
-        var album = mp3File.Tag.Album;
-        var artist = mp3File.Tag.FirstPerformer;
-        var title = mp3File.Tag.Title;
+        var album = GetAlbumId3V1(mp3File.Tag.Album);
+        var artist = GetArtistId3V1(mp3File.Tag.FirstPerformer);
+        var title = GetTitleId3V1(mp3File.Tag.Title);
+        var track = mp3File.Tag.Track;
 
         mp3File.RemoveTags(TagTypes.AllTags);
 
         var id3V1 = mp3File.GetTag(TagTypes.Id3v1, true);
 
-        id3V1.Album = GetAlbumId3V1(album);
-        id3V1.Performers[0] = GetAlbumId3V1(artist);
-        id3V1.Title = GetAlbumId3V1(title);
+        id3V1.Track = track;
+        id3V1.Album = album;
+        id3V1.Performers = new []{ artist };
+        id3V1.Title = title;
 
         mp3File.Save();
+
+        var newFileName = $"{track:00}-{artist}-{title}.mp3".RemoveInvalidFileNameChars();
+        // ReSharper disable once PossibleNullReferenceException
+        var newFilePath = Path.Combine(Directory.GetParent(mp3FilePath).FullName, newFileName);
+        File.Move(mp3FilePath, newFilePath);
       }
     }
 
@@ -95,12 +103,13 @@ namespace Mp3Detag.Core
 
     private static string SanitizeName(string fullCharsetString, int maxLength)
     {
-      var tempBytes = Encoding.GetEncoding("ISO-8859-8").GetBytes(fullCharsetString);
-      var sanitizedString = Encoding.UTF8.GetString(tempBytes);
+      var sanitizedString = fullCharsetString.SanitizeByMap().SanitizeByEncoding().SanitizeByAsciiCode();
+      
       if (sanitizedString.Length > 30)
       {
-        sanitizedString = sanitizedString.Substring(0, 30);
+        sanitizedString = sanitizedString.Substring(0, maxLength);
       }
+      
       return sanitizedString;
     }
   }

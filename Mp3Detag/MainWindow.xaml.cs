@@ -1,20 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Mp3Detag.Core;
-using Path = System.IO.Path;
 
 namespace Mp3Detag
 {
@@ -30,7 +16,7 @@ namespace Mp3Detag
 
     private void ApplyButton_Click(object sender, RoutedEventArgs e)
     {
-      var path = DrivePath.Text;
+      var path = WorkingPath.Text;
 
       if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
       {
