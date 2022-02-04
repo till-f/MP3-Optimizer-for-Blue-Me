@@ -17,13 +17,15 @@ namespace BlueAndMeManager
       set => SetValue(FullPathProperty, value);
     }
 
-    public ObservableCollection<MusicFolder> Folders { get; } = new ();
+    public ObservableCollection<Playlist> Playlists { get; } = new();
 
-    public ObservableCollection<MusicFile> Tracks { get; } = new();
+    public ObservableCollection<MusicFolder> MusicFolders { get; } = new ();
 
-    public ObservableCollection<MusicFolder> SelectedFolders { get; } = new();
+    public ObservableCollection<Track> Tracks { get; } = new();
 
-    public ObservableCollection<MusicFile> SelectedTracks { get; } = new();
+    public ObservableCollection<MusicFolder> SelectedMusicFolders { get; } = new();
+
+    public ObservableCollection<Track> SelectedTracks { get; } = new();
 
     public MusicDrive(string fullPath)
     {
@@ -34,21 +36,27 @@ namespace BlueAndMeManager
     {
       var rootFolder = (string)e.NewValue;
 
-      musicDrive.Folders.Clear();
+      musicDrive.MusicFolders.Clear();
 
       foreach (var musicFolder in Directory.GetDirectories(rootFolder).Select(s => new MusicFolder(musicDrive, s)))
       {
-        musicDrive.Folders.Add(musicFolder);
+        musicDrive.MusicFolders.Add(musicFolder);
       }
+
+      foreach (var playlist in Directory.GetFiles(rootFolder, "*.m3u", SearchOption.TopDirectoryOnly).Select(s => new Playlist(musicDrive, s)))
+      {
+        musicDrive.Playlists.Add(playlist);
+      }
+
     }
 
     public void RefreshTracks()
     {
       Tracks.Clear();
 
-      foreach (var folder in SelectedFolders)
+      foreach (var folder in SelectedMusicFolders)
       {
-        foreach (var musicFile in Directory.GetFiles(folder.FullPath, "*.mp3", SearchOption.AllDirectories).Select(s => new MusicFile(folder, s)))
+        foreach (var musicFile in Directory.GetFiles(folder.FullPath, "*.mp3", SearchOption.AllDirectories).Select(s => new Track(folder, s)))
         {
           Tracks.Add(musicFile);
         }

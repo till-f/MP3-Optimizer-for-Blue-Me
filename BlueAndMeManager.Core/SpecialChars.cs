@@ -9,11 +9,13 @@ namespace BlueAndMeManager.Core
   {
     private static readonly string InvalidFileChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
 
-    // all remaining special chars:
-    // .,:;_-#+-=*~!?§$%&/\()}{]['"`´
+    // ASCII 0x20-0x7E special chars:
+    // .,:;_-#+=*~!?§$%&/\()}{]['"`
     // invalid special chars:
-    // .,:;_-#-=*~§$%&\()}{]['"`´
-    private static readonly string InvalidBlueAndMeChars = "";
+    // ,;_=§$%&\()}{]['"`
+    // supported special chars:
+    // .:-#+*!?/
+    private static readonly string InvalidBlueAndMeChars = ",;_=§$%&\\()}{]['\"`";
 
     private static readonly Dictionary<string, string> SpecialCharsMap = new()
     {
@@ -107,10 +109,10 @@ namespace BlueAndMeManager.Core
         { "Я", "Ya" },
         { "я", "ya" },
 
-        { "\\", "/" },
         { "&", " and " },
-        //{ "$", " Dollar " },
-        //{ "%", " percent " },
+        { ",", "." },
+        { ";", ":" },
+        { "\\", "/" },
     };
 
     public static string SanitizeByMap(this string s)
@@ -138,18 +140,13 @@ namespace BlueAndMeManager.Core
       return textBuilder.ToString();
     }
 
-    public static string CollapseWhitespace(this string s)
-    {
-      return Regex.Replace(s, " +", " ");
-    }
-
     public static string SanitizeByEncoding(this string s)
     {
       var tempBytes = Encoding.GetEncoding("ISO-8859-8").GetBytes(s);
       return Encoding.UTF8.GetString(tempBytes);
     }
 
-    public static string RemoveInvalidBlueAndMeChars1(this string s)
+    public static string WhitespaceNonBasicAscii(this string s)
     {
       var textBuilder = new StringBuilder();
 
@@ -159,23 +156,36 @@ namespace BlueAndMeManager.Core
         {
           textBuilder.Append(c);
         }
+        else
+        {
+          textBuilder.Append(' ');
+        }
       }
       return textBuilder.ToString();
     }
 
-    public static string RemoveInvalidBlueAndMeChars2(this string s)
+    public static string WhitespaceBlueAndMeUnsupported(this string s)
     {
       var textBuilder = new StringBuilder();
 
       foreach (char c in s)
       {
-        if (!InvalidBlueAndMeChars.Contains(c))
+        if (InvalidBlueAndMeChars.Contains(c))
+        {
+          textBuilder.Append(' ');
+        }
+        else
         {
           textBuilder.Append(c);
         }
       }
 
       return textBuilder.ToString();
+    }
+
+    public static string CollapseWhitespace(this string s)
+    {
+      return Regex.Replace(s, " +", " ");
     }
 
     public static string RemoveInvalidFileNameChars(this string s)

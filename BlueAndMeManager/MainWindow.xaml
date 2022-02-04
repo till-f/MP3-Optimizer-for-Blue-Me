@@ -69,7 +69,7 @@
                 <Label Grid.Row="0">Folders:</Label>
                 <ListBox Grid.Row="1" Name="FoldersBox" 
                          SelectionChanged="FoldersBox_OnSelectionChanged"
-                         ItemsSource="{Binding Folders}" 
+                         ItemsSource="{Binding MusicFolders}" 
                          SelectionMode="Extended"/>
             </Grid>
             <Grid Grid.Column="2">

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -129,10 +127,10 @@ namespace BlueAndMeManager.Core
     private static string SanitizeName(string fullCharsetString, int maxLength)
     {
       var sanitizedString = fullCharsetString
-        .SanitizeByMap()                // applies proper replacements like "ä -> ae"
-        .SanitizeByEncoding()           // just in case the map is incomplete
-        .RemoveInvalidBlueAndMeChars1() // remove all control chars based on ASCII code
-        .RemoveInvalidBlueAndMeChars2() // remove special chars not supported by Blue&Me
+        .SanitizeByMap()                  // applies proper replacements like "ä -> ae"
+        .SanitizeByEncoding()             // just in case the map is incomplete
+        .WhitespaceNonBasicAscii()        // remove all control chars based on ASCII code
+        .WhitespaceBlueAndMeUnsupported() // remove special chars not supported by Blue&Me
         .CollapseWhitespace();
 
       if (sanitizedString.Length > 30)

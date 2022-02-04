@@ -3,13 +3,13 @@ using System.Windows;
 
 namespace BlueAndMeManager
 {
-  public class MusicFile : DependencyObject
+  public class Track : DependencyObject
   {
     public MusicFolder MusicFolder { get; }
 
     public string FullPath { get; }
 
-    public MusicFile(MusicFolder musicFolder, string fullPath)
+    public Track(MusicFolder musicFolder, string fullPath)
     {
       MusicFolder = musicFolder;
       FullPath = fullPath;

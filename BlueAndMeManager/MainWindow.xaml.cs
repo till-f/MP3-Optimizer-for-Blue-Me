@@ -68,12 +68,12 @@ namespace BlueAndMeManager
 
       foreach (var folder in e.AddedItems)
       {
-        MusicDrive.SelectedFolders.Add((MusicFolder)folder);
+        MusicDrive.SelectedMusicFolders.Add((MusicFolder)folder);
       }
 
       foreach (var folder in e.RemovedItems)
       {
-        MusicDrive.SelectedFolders.Remove((MusicFolder)folder);
+        MusicDrive.SelectedMusicFolders.Remove((MusicFolder)folder);
       }
 
       MusicDrive.RefreshTracks();
@@ -88,12 +88,12 @@ namespace BlueAndMeManager
 
       foreach (var folder in e.AddedItems)
       {
-        MusicDrive.SelectedTracks.Add((MusicFile)folder);
+        MusicDrive.SelectedTracks.Add((Track)folder);
       }
 
       foreach (var folder in e.RemovedItems)
       {
-        MusicDrive.SelectedTracks.Remove((MusicFile)folder);
+        MusicDrive.SelectedTracks.Remove((Track)folder);
       }
     }
 
