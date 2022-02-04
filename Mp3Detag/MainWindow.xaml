@@ -4,14 +4,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mp3Detag"
+        xmlns:wpfExtConv="clr-namespace:WpfExtensions.Converters;assembly=WpfExtensions"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance local:MusicDrive}"
         d:DesignWidth="600"
         d:DesignHeight="450"
-        Title="MainWindow" 
+        Title="Blue&amp;Me Playlist Manager and Tag Fixer" 
         Width="1200" 
         Height="600"
         >
+    <Window.Resources>
+        <wpfExtConv:ObjectRefToBooleanConverter x:Key="ObjectRefToBooleanConverter"/>
+    </Window.Resources>
     <DockPanel>
         <Grid DockPanel.Dock="Top" Margin="0, 5">
             <Grid.ColumnDefinitions>
@@ -29,7 +33,13 @@
                 <TextBox Grid.Column="1" Name="WorkingPath" Width="Auto" Margin="10, 0" VerticalContentAlignment="Center" Text="C:\Data\Temp\mp3s"/>
                 <Button Grid.Column="2" Content="Open/Refresh" Padding="10,0" Click="OpenButton_Click"/>
             </Grid>
-            <Button Grid.Column="2" Content="Fix Tags (Blue&amp;Me)" HorizontalAlignment="Right" Padding="10,0" Margin="5,0" Click="ApplyButton_Click"/>
+            <Button Grid.Column="2" 
+                    HorizontalAlignment="Right" 
+                    Padding="10,0" 
+                    Margin="5,0"
+                    Content="Fix Tags"
+                    IsEnabled="{Binding FullPath, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
+                    Click="FixTagsButton_Click" />
         </Grid>
         <Grid DockPanel.Dock="Bottom">
             <StackPanel>
@@ -57,7 +67,10 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0">Folders:</Label>
-                <ListBox Grid.Row="1" Name="FoldersBox" ItemsSource="{Binding Folders}" SelectedItem="{Binding SelectedFolder}" />
+                <ListBox Grid.Row="1" Name="FoldersBox" 
+                         SelectionChanged="FoldersBox_OnSelectionChanged"
+                         ItemsSource="{Binding Folders}" 
+                         SelectionMode="Extended"/>
             </Grid>
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
@@ -65,7 +78,10 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0">Tracks:</Label>
-                <ListBox Grid.Row="1" Name="TracksBox" DataContext="{Binding SelectedFolder}" ItemsSource="{Binding Files}" />
+                <ListBox Grid.Row="1" Name="TracksBox"
+                         SelectionChanged="TracksBox_OnSelectionChanged"
+                         ItemsSource="{Binding Tracks}"
+                         SelectionMode="Extended"/>
             </Grid>
         </Grid>
     </DockPanel>

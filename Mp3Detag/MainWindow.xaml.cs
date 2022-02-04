@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using Mp3Detag.Core;
 
 namespace Mp3Detag
@@ -9,10 +12,13 @@ namespace Mp3Detag
   /// </summary>
   public partial class MainWindow : Window
   {
+    public MusicDrive MusicDrive => DataContext as MusicDrive;
+
     public MainWindow()
     {
       InitializeComponent();
     }
+
     private void OpenButton_Click(object sender, RoutedEventArgs e)
     {
       var path = WorkingPath.Text;
@@ -26,27 +32,78 @@ namespace Mp3Detag
       DataContext = new MusicDrive(path);
     }
 
-    private void ApplyButton_Click(object sender, RoutedEventArgs e)
+    private void FixTagsButton_Click(object sender, RoutedEventArgs e)
     {
-      var path = WorkingPath.Text;
+      TagFixer tagFixer;
 
-      if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+      if (MusicDrive?.SelectedTracks?.Count > 0)
       {
-        OnError($"Invalid path: {path}");
+        tagFixer = new TagFixer(MusicDrive.SelectedTracks.Select(file => file.FullPath), EFileSelectionMode.ExplicitFile, OnProgress, OnError);
+      }
+      else if (MusicDrive?.Tracks?.Count > 0)
+      {
+        tagFixer = new TagFixer(MusicDrive.Tracks.Select(file => file.FullPath), EFileSelectionMode.ExplicitFile, OnProgress, OnError);
+      }
+      else if (MusicDrive != null)
+      {
+        tagFixer = new TagFixer(new []{ MusicDrive.FullPath }, EFileSelectionMode.DirectoryRecursive, OnProgress, OnError);
+      }
+      else
+      {
+        OnError($"No path selected");
         return;
       }
-
-      var tagFixer = new TagFixer(path, EFileSelectionMode.DirectoryRecursive, OnProgress, OnError);
 
       tagFixer.RunAsync();
     }
 
-    private void OnProgress(double perent, string message)
+    private void FoldersBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+      if (MusicDrive == null)
+      {
+        return;
+      }
+
+      TracksBox.SelectedItems.Clear();
+
+      foreach (var folder in e.AddedItems)
+      {
+        MusicDrive.SelectedFolders.Add((MusicFolder)folder);
+      }
+
+      foreach (var folder in e.RemovedItems)
+      {
+        MusicDrive.SelectedFolders.Remove((MusicFolder)folder);
+      }
+
+      MusicDrive.RefreshTracks();
+    }
+
+    private void TracksBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      if (MusicDrive == null)
+      {
+        return;
+      }
+
+      foreach (var folder in e.AddedItems)
+      {
+        MusicDrive.SelectedTracks.Add((MusicFile)folder);
+      }
+
+      foreach (var folder in e.RemovedItems)
+      {
+        MusicDrive.SelectedTracks.Remove((MusicFile)folder);
+      }
+    }
+
+    private void OnProgress(double percent, string message)
+    {
+      Debug.Print(message);
       Dispatcher.InvokeAsync(() =>
       {
         StatusBar.Content = message;
-        ProgressBar.Value = perent;
+        ProgressBar.Value = percent;
       });
     }
 

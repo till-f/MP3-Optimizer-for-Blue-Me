@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Windows;
 
-using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<Mp3Detag.MusicFile>;
-
 namespace Mp3Detag
 {
   public class MusicFile : DependencyObject

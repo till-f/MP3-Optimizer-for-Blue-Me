@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TagLib;
@@ -21,23 +24,23 @@ namespace Mp3Detag.Core
 
     public delegate void OnError(string message);
 
-    private readonly string _filePath;
+    private readonly string[] _paths;
     private readonly EFileSelectionMode _fileSelectionMode;
     private readonly OnProgress _onProgress;
     private readonly OnError _onError;
 
-    private string[] AllFiles
+    private IEnumerable<string> AllFiles
     {
       get
       {
         switch (_fileSelectionMode)
         {
           case EFileSelectionMode.ExplicitFile:
-            return new[] { _filePath };
+            return _paths;
           case EFileSelectionMode.Directory:
-            return Directory.GetFiles(_filePath, "*.mp3", SearchOption.TopDirectoryOnly);
+            return _paths.SelectMany(path => Directory.GetFiles(path, "*.mp3", SearchOption.TopDirectoryOnly));
           case EFileSelectionMode.DirectoryRecursive:
-            return Directory.GetFiles(_filePath, "*.mp3", SearchOption.AllDirectories);
+            return _paths.SelectMany(path => Directory.GetFiles(path, "*.mp3", SearchOption.AllDirectories));
           default:
             throw new ArgumentOutOfRangeException();
         }
@@ -45,11 +48,11 @@ namespace Mp3Detag.Core
       }
     }
 
-    public TagFixer(string filePath, EFileSelectionMode fileSelectionMode, OnProgress onProgress = null, OnError onError = null)
+    public TagFixer(IEnumerable<string> paths, EFileSelectionMode fileSelectionMode, OnProgress onProgress = null, OnError onError = null)
     {
       Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-      _filePath = filePath;
+      _paths = paths.ToArray();
       _fileSelectionMode = fileSelectionMode;
       _onProgress = onProgress;
       _onError = onError;
@@ -68,10 +71,11 @@ namespace Mp3Detag.Core
       {
         _onProgress?.Invoke(0, "Processing...");
 
-        int processedFiles = 0;
+        double allFilesCount = AllFiles.Count();
+        var processedFilesCount = 0;
         foreach (var mp3FilePath in AllFiles)
         {
-          _onProgress?.Invoke(processedFiles++ / (double)AllFiles.Length * 100, $"Processing {mp3FilePath}...");
+          _onProgress?.Invoke(processedFilesCount++ / allFilesCount * 100, $"Processing {mp3FilePath}...");
 
           var mp3File = TagLib.File.Create(mp3FilePath);
 

@@ -9,8 +9,6 @@ namespace Mp3Detag
 {
   public class MusicDrive : DependencyObject
   {
-    public ObservableCollection<MusicFolder> Folders { get; } = new ();
-
     public static readonly DependencyProperty FullPathProperty = RegisterProperty(musicDrive => musicDrive.FullPath).OnChange(OnFullPathChanged);
 
     public string FullPath
@@ -19,13 +17,13 @@ namespace Mp3Detag
       set => SetValue(FullPathProperty, value);
     }
 
-    public static readonly DependencyProperty SelectedFolderProperty = RegisterProperty(musicDrive => musicDrive.SelectedFolder);
+    public ObservableCollection<MusicFolder> Folders { get; } = new ();
 
-    public MusicFolder SelectedFolder
-    {
-      get => (MusicFolder)GetValue(SelectedFolderProperty);
-      set => SetValue(SelectedFolderProperty, value);
-    }
+    public ObservableCollection<MusicFile> Tracks { get; } = new();
+
+    public ObservableCollection<MusicFolder> SelectedFolders { get; } = new();
+
+    public ObservableCollection<MusicFile> SelectedTracks { get; } = new();
 
     public MusicDrive(string fullPath)
     {
@@ -41,6 +39,19 @@ namespace Mp3Detag
       foreach (var musicFolder in Directory.GetDirectories(rootFolder).Select(s => new MusicFolder(musicDrive, s)))
       {
         musicDrive.Folders.Add(musicFolder);
+      }
+    }
+
+    public void RefreshTracks()
+    {
+      Tracks.Clear();
+
+      foreach (var folder in SelectedFolders)
+      {
+        foreach (var musicFile in Directory.GetFiles(folder.FullPath, "*.mp3", SearchOption.AllDirectories).Select(s => new MusicFile(folder, s)))
+        {
+          Tracks.Add(musicFile);
+        }
       }
     }
   }
