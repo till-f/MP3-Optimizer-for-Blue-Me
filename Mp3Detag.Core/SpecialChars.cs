@@ -9,18 +9,9 @@ namespace Mp3Detag.Core
   {
     private static readonly string InvalidFileChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
 
-    // ,.-;:_#'+*~!"§$%&/()=?`´\}][{
-    private static readonly string InvalidBlueAndMeChars = "%()[]{}='\"`´";
-
-    private static readonly Dictionary<string, string> RegExReplacements = new()
-    {
-      { "([^ ])&([^ ])", "$1 and $2" },
-      { "([^ ])& ", "$1 and " },
-      { " &([^ ])", " and $1" },
-      { " & ", " and " },
-      { "([^ ])\\$", "$1 Dollar" },
-      { " \\$", " Dollar" },
-    };
+    // .,:;_-#+-=*~!?§$%&/\()}{]['"`´
+    // .,:;_-# -=*~  §$%& \()}{]['"`´
+    private static readonly string InvalidBlueAndMeChars = "";
 
     private static readonly Dictionary<string, string> SpecialCharsMap = new()
     {
@@ -115,6 +106,9 @@ namespace Mp3Detag.Core
         { "я", "ya" },
 
         { "\\", "/" },
+        { "&", " and " },
+        //{ "$", " Dollar " },
+        //{ "%", " percent " },
     };
 
     public static string SanitizeByMap(this string s)
@@ -142,14 +136,9 @@ namespace Mp3Detag.Core
       return textBuilder.ToString();
     }
 
-    public static string SanitizeByRegex(this string s)
+    public static string CollapseWhitespace(this string s)
     {
-      foreach (var kvp in RegExReplacements)
-      {
-        s = Regex.Replace(s, kvp.Key, kvp.Value);
-      }
-
-      return s;
+      return Regex.Replace(s, " +", " ");
     }
 
     public static string SanitizeByEncoding(this string s)

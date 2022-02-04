@@ -104,12 +104,12 @@ namespace Mp3Detag.Core
     private static string SanitizeName(string fullCharsetString, int maxLength)
     {
       var sanitizedString = fullCharsetString
-        .SanitizeByMap()
-        .SanitizeByRegex()
-        .SanitizeByEncoding()
-        .RemoveInvalidBlueAndMeChars1()
-        .RemoveInvalidBlueAndMeChars2();
-      
+        .SanitizeByMap()                // applies proper replacements like "ä -> ae"
+        .SanitizeByEncoding()           // just in case the map is incomplete
+        .RemoveInvalidBlueAndMeChars1() // remove all control chars based on ASCII code
+        .RemoveInvalidBlueAndMeChars2() // remove special chars not supported by Blue&Me
+        .CollapseWhitespace();
+
       if (sanitizedString.Length > 30)
       {
         sanitizedString = sanitizedString.Substring(0, maxLength);
