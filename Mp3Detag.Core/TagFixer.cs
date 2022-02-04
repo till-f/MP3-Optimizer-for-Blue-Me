@@ -103,7 +103,12 @@ namespace Mp3Detag.Core
 
     private static string SanitizeName(string fullCharsetString, int maxLength)
     {
-      var sanitizedString = fullCharsetString.SanitizeByMap().SanitizeByEncoding().SanitizeByAsciiCode();
+      var sanitizedString = fullCharsetString
+        .SanitizeByMap()
+        .SanitizeByRegex()
+        .SanitizeByEncoding()
+        .RemoveInvalidBlueAndMeChars1()
+        .RemoveInvalidBlueAndMeChars2();
       
       if (sanitizedString.Length > 30)
       {

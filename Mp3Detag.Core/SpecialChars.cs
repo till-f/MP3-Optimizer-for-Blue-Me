@@ -1,12 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Mp3Detag.Core
 {
   public static class SpecialChars
   {
     private static readonly string InvalidFileChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+
+    // ,.-;:_#'+*~!"§$%&/()=?`´\}][{
+    private static readonly string InvalidBlueAndMeChars = "%()[]{}='\"`´";
+
+    private static readonly Dictionary<string, string> RegExReplacements = new()
+    {
+      { "([^ ])&([^ ])", "$1 and $2" },
+      { "([^ ])& ", "$1 and " },
+      { " &([^ ])", " and $1" },
+      { " & ", " and " },
+      { "([^ ])\\$", "$1 Dollar" },
+      { " \\$", " Dollar" },
+    };
 
     private static readonly Dictionary<string, string> SpecialCharsMap = new()
     {
@@ -100,7 +114,7 @@ namespace Mp3Detag.Core
         { "Я", "Ya" },
         { "я", "ya" },
 
-//        { "&", "'n" },
+        { "\\", "/" },
     };
 
     public static string SanitizeByMap(this string s)
@@ -128,13 +142,23 @@ namespace Mp3Detag.Core
       return textBuilder.ToString();
     }
 
+    public static string SanitizeByRegex(this string s)
+    {
+      foreach (var kvp in RegExReplacements)
+      {
+        s = Regex.Replace(s, kvp.Key, kvp.Value);
+      }
+
+      return s;
+    }
+
     public static string SanitizeByEncoding(this string s)
     {
       var tempBytes = Encoding.GetEncoding("ISO-8859-8").GetBytes(s);
       return Encoding.UTF8.GetString(tempBytes);
     }
 
-    public static string SanitizeByAsciiCode(this string s)
+    public static string RemoveInvalidBlueAndMeChars1(this string s)
     {
       var textBuilder = new StringBuilder();
 
@@ -145,6 +169,21 @@ namespace Mp3Detag.Core
           textBuilder.Append(c);
         }
       }
+      return textBuilder.ToString();
+    }
+
+    public static string RemoveInvalidBlueAndMeChars2(this string s)
+    {
+      var textBuilder = new StringBuilder();
+
+      foreach (char c in s)
+      {
+        if (!InvalidBlueAndMeChars.Contains(c))
+        {
+          textBuilder.Append(c);
+        }
+      }
+
       return textBuilder.ToString();
     }
 
