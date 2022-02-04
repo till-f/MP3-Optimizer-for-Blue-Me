@@ -17,9 +17,14 @@ namespace Mp3Detag.Core
 
   public class TagFixer
   {
-    private readonly string _filePath;
+    public delegate void OnProgress(double percent, string message);
 
+    public delegate void OnError(string message);
+
+    private readonly string _filePath;
     private readonly EFileSelectionMode _fileSelectionMode;
+    private readonly OnProgress _onProgress;
+    private readonly OnError _onError;
 
     private string[] AllFiles
     {
@@ -40,12 +45,14 @@ namespace Mp3Detag.Core
       }
     }
 
-    public TagFixer(string filePath, EFileSelectionMode fileSelectionMode)
+    public TagFixer(string filePath, EFileSelectionMode fileSelectionMode, OnProgress onProgress = null, OnError onError = null)
     {
       Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
       _filePath = filePath;
       _fileSelectionMode = fileSelectionMode;
+      _onProgress = onProgress;
+      _onError = onError;
     }
 
     public Task RunAsync()
@@ -57,32 +64,46 @@ namespace Mp3Detag.Core
 
     public void Run()
     {
-      foreach (var mp3FilePath in AllFiles)
+      try
       {
-        Debug.Print($"Processing file {mp3FilePath}...");
+        _onProgress?.Invoke(0, "Processing...");
 
-        var mp3File = TagLib.File.Create(mp3FilePath);
+        int processedFiles = 0;
+        foreach (var mp3FilePath in AllFiles)
+        {
+          _onProgress?.Invoke(processedFiles++ / (double)AllFiles.Length * 100, $"Processing {mp3FilePath}...");
 
-        var album = GetAlbumId3V1(mp3File.Tag.Album);
-        var artist = GetArtistId3V1(mp3File.Tag.FirstPerformer);
-        var title = GetTitleId3V1(mp3File.Tag.Title);
-        var track = mp3File.Tag.Track;
+          var mp3File = TagLib.File.Create(mp3FilePath);
 
-        mp3File.RemoveTags(TagTypes.AllTags);
+          var album = GetAlbumId3V1(mp3File.Tag.Album);
+          var artist = GetArtistId3V1(mp3File.Tag.FirstPerformer);
+          var title = GetTitleId3V1(mp3File.Tag.Title);
+          var track = mp3File.Tag.Track;
 
-        var id3V1 = mp3File.GetTag(TagTypes.Id3v1, true);
+          mp3File.RemoveTags(TagTypes.AllTags);
 
-        id3V1.Track = track;
-        id3V1.Album = album;
-        id3V1.Performers = new []{ artist };
-        id3V1.Title = title;
+          var id3V1 = mp3File.GetTag(TagTypes.Id3v1, true);
 
-        mp3File.Save();
+          id3V1.Track = track;
+          id3V1.Album = album;
+          id3V1.Performers = new[] { artist };
+          id3V1.Title = title;
 
-        var newFileName = $"{track:00}-{artist}-{title}.mp3".RemoveInvalidFileNameChars();
-        // ReSharper disable once PossibleNullReferenceException
-        var newFilePath = Path.Combine(Directory.GetParent(mp3FilePath).FullName, newFileName);
-        File.Move(mp3FilePath, newFilePath);
+          mp3File.Save();
+
+          var newFileName = $"{track:00}-{artist}-{title}.mp3".RemoveInvalidFileNameChars();
+          // ReSharper disable once PossibleNullReferenceException
+          var newFilePath = Path.Combine(Directory.GetParent(mp3FilePath).FullName, newFileName);
+          File.Move(mp3FilePath, newFilePath);
+        }
+      }
+      catch (Exception e)
+      {
+        _onError?.Invoke($"{e.GetType().Name}: {e.Message}");
+      }
+      finally
+      {
+        _onProgress?.Invoke(0, "Idle");
       }
     }
 

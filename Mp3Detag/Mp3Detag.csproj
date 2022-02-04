@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mp3Detag.Core\Mp3Detag.Core.csproj" />
+    <ProjectReference Include="..\WpfExtensions\WpfExtensions.csproj" />
   </ItemGroup>
 
 </Project>

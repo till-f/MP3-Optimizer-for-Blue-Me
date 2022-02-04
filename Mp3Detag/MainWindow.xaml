@@ -5,34 +5,68 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mp3Detag"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        d:DataContext="{d:DesignInstance local:MusicDrive}"
+        d:DesignWidth="600"
+        d:DesignHeight="450"
+        Title="MainWindow" 
+        Width="1200" 
+        Height="600"
+        >
     <DockPanel>
-        <Grid DockPanel.Dock="Top">
-            <Grid.RowDefinitions>
-                <RowDefinition></RowDefinition>
-            </Grid.RowDefinitions>
+        <Grid DockPanel.Dock="Top" Margin="0, 5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition></RowDefinition>
-                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="Path:"/>
                 <TextBox Grid.Column="1" Name="WorkingPath" Width="Auto" Margin="10, 0" VerticalContentAlignment="Center" Text="C:\Data\Temp\mp3s"/>
-                <Button Grid.Column="2" Content="Apply" Padding="10,0" Click="ApplyButton_Click"/>
+                <Button Grid.Column="2" Content="Open/Refresh" Padding="10,0" Click="OpenButton_Click"/>
             </Grid>
-
+            <Button Grid.Column="2" Content="Fix Tags (Blue&amp;Me)" HorizontalAlignment="Right" Padding="10,0" Margin="5,0" Click="ApplyButton_Click"/>
+        </Grid>
+        <Grid DockPanel.Dock="Bottom">
+            <StackPanel>
+                <Label Name="StatusBar" Padding="2,0">Idle</Label>
+                <ProgressBar Name="ProgressBar" Height="10" Orientation="Horizontal" Value="0"/>
+            </StackPanel>
         </Grid>
         <Grid>
-
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0">Playlists:</Label>
+                <ListBox Grid.Row="1" Name="PlaylistsBox"/>
+            </Grid>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0">Folders:</Label>
+                <ListBox Grid.Row="1" Name="FoldersBox" ItemsSource="{Binding Folders}" SelectedItem="{Binding SelectedFolder}" />
+            </Grid>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0">Tracks:</Label>
+                <ListBox Grid.Row="1" Name="TracksBox" DataContext="{Binding SelectedFolder}" ItemsSource="{Binding Files}" />
+            </Grid>
         </Grid>
     </DockPanel>
 </Window>

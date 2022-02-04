@@ -9,8 +9,10 @@ namespace Mp3Detag.Core
   {
     private static readonly string InvalidFileChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
 
+    // all remaining special chars:
     // .,:;_-#+-=*~!?§$%&/\()}{]['"`´
-    // .,:;_-# -=*~  §$%& \()}{]['"`´
+    // invalid special chars:
+    // .,:;_-#-=*~§$%&\()}{]['"`´
     private static readonly string InvalidBlueAndMeChars = "";
 
     private static readonly Dictionary<string, string> SpecialCharsMap = new()

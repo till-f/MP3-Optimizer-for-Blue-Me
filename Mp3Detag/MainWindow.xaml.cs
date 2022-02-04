@@ -13,6 +13,18 @@ namespace Mp3Detag
     {
       InitializeComponent();
     }
+    private void OpenButton_Click(object sender, RoutedEventArgs e)
+    {
+      var path = WorkingPath.Text;
+
+      if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+      {
+        OnError($"Invalid path: {path}");
+        return;
+      }
+
+      DataContext = new MusicDrive(path);
+    }
 
     private void ApplyButton_Click(object sender, RoutedEventArgs e)
     {
@@ -20,13 +32,27 @@ namespace Mp3Detag
 
       if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
       {
-        MessageBox.Show("Invalid Path");
+        OnError($"Invalid path: {path}");
         return;
       }
 
-      var tagFixer = new TagFixer(path, EFileSelectionMode.DirectoryRecursive);
+      var tagFixer = new TagFixer(path, EFileSelectionMode.DirectoryRecursive, OnProgress, OnError);
 
-      tagFixer.Run();
+      tagFixer.RunAsync();
+    }
+
+    private void OnProgress(double perent, string message)
+    {
+      Dispatcher.InvokeAsync(() =>
+      {
+        StatusBar.Content = message;
+        ProgressBar.Value = perent;
+      });
+    }
+
+    private void OnError(string message)
+    {
+      MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
     }
   }
 }
