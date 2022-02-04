@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Windows;
 
-namespace Mp3Detag
+namespace BlueAndMeManager
 {
   public class MusicFile : DependencyObject
   {

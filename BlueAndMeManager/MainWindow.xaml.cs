@@ -3,9 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Mp3Detag.Core;
+using BlueAndMeManager.Core;
 
-namespace Mp3Detag
+namespace BlueAndMeManager
 {
   /// <summary>
   /// Interaction logic for MainWindow.xaml

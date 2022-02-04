@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using TagLib;
 using File = System.IO.File;
 
-namespace Mp3Detag.Core
+namespace BlueAndMeManager.Core
 {
   public enum EFileSelectionMode
   {

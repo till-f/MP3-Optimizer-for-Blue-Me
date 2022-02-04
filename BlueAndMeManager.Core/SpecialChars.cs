@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Mp3Detag.Core
+namespace BlueAndMeManager.Core
 {
   public static class SpecialChars
   {

@@ -3,9 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 
-using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<Mp3Detag.MusicDrive>;
+using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.MusicDrive>;
 
-namespace Mp3Detag
+namespace BlueAndMeManager
 {
   public class MusicDrive : DependencyObject
   {
