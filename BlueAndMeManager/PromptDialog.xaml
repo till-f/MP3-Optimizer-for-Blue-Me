@@ -1,0 +1,38 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BlueAndMeManager"
+        xmlns:Converters="clr-namespace:WpfExtensions.Converters;assembly=WpfExtensions" x:Class="BlueAndMeManager.PromptDialog"
+        mc:Ignorable="d"
+        x:Name="Window"
+        SizeToContent="Height"
+        Width="400"
+        Loaded="Window_OnLoaded"
+        >
+    <Window.Resources>
+        <Converters:ObjectRefToCollapsedVisibilityConverter x:Key="ObjectRefToCollapsedVisibilityConverter"/>
+    </Window.Resources>
+    <StackPanel>
+        <Label Content="{Binding Message, ElementName=Window}" Margin="10, 10, 10, 5" />
+        <Grid Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" 
+                   Content="{Binding Query, ElementName=Window}" 
+                   Visibility="{Binding Query, Converter={StaticResource ObjectRefToCollapsedVisibilityConverter}, ElementName=Window}"  />
+            <TextBox Name = "ValueTextBox"
+                     Grid.Column="1" 
+                     TabIndex="0"
+                     Text="{Binding Value, ElementName=Window}" 
+                     VerticalContentAlignment="Center" />
+        </Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10" >
+            <Button Content="OK" Width="80" IsDefault="True" Margin="10, 0" Click="Ok_Click" />
+            <Button Content="Cancel" Width="80" Click="Cancel_Click" />
+        </StackPanel>
+    </StackPanel>
+</Window>

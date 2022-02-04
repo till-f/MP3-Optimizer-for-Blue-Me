@@ -43,7 +43,7 @@ namespace BlueAndMeManager
         musicDrive.MusicFolders.Add(musicFolder);
       }
 
-      foreach (var playlist in Directory.GetFiles(rootFolder, "*.m3u", SearchOption.TopDirectoryOnly).Select(s => new Playlist(musicDrive, s)))
+      foreach (var playlist in Directory.GetFiles(rootFolder, "*.m3u", SearchOption.TopDirectoryOnly).Select(s => new Playlist(musicDrive, Path.GetFileNameWithoutExtension(s))))
       {
         musicDrive.Playlists.Add(playlist);
       }

@@ -1,9 +1,13 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using BlueAndMeManager.Core;
+using Microsoft.Win32;
+using WpfExtensions.Helpers;
 
 namespace BlueAndMeManager
 {
@@ -12,7 +16,11 @@ namespace BlueAndMeManager
   /// </summary>
   public partial class MainWindow : Window
   {
-    public MusicDrive MusicDrive => DataContext as MusicDrive;
+    public MusicDrive MusicDrive
+    {
+      get => DataContext as MusicDrive;
+      set => DataContext = value;
+    }
 
     public MainWindow()
     {
@@ -29,7 +37,7 @@ namespace BlueAndMeManager
         return;
       }
 
-      DataContext = new MusicDrive(path);
+      MusicDrive = new MusicDrive(path);
     }
 
     private void FixTagsButton_Click(object sender, RoutedEventArgs e)
@@ -54,7 +62,9 @@ namespace BlueAndMeManager
         return;
       }
 
-      tagFixer.RunAsync();
+      var task = tagFixer.RunAsync();
+
+      task.OnCompletion(() => Dispatcher.Invoke(() => MusicDrive.RefreshTracks()));
     }
 
     private void FoldersBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -77,6 +87,8 @@ namespace BlueAndMeManager
       }
 
       MusicDrive.RefreshTracks();
+
+      UpdateEditPlaylistButtonsEnabledState();
     }
 
     private void TracksBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -95,6 +107,75 @@ namespace BlueAndMeManager
       {
         MusicDrive.SelectedTracks.Remove((Track)folder);
       }
+    }
+
+    private void PlaylistsBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      UpdateEditPlaylistButtonsEnabledState();
+    }
+
+    private void AddPlaylistButton_Click(object sender, RoutedEventArgs e)
+    {
+      var dialog = new PromptDialog("This will create a new playlist. Please choose a short name for the playlist.",
+        "Playlist name: ", "New Playlist");
+
+      var result = dialog.ShowDialog();
+
+      if (!result.HasValue || !result.Value || string.IsNullOrWhiteSpace(dialog.Value))
+      {
+        return;
+      }
+
+      MusicDrive.Playlists.Add(new Playlist(MusicDrive, dialog.Value));
+    }
+
+    private void RemovePlaylistButton_Click(object sender, RoutedEventArgs e)
+    {
+      var playlist = PlaylistsBox.SelectedItem as Playlist;
+      if (playlist == null)
+      {
+        return;
+      }
+
+      var playlistIndex = PlaylistsBox.SelectedIndex;
+
+      playlist.Remove();
+
+      if (playlistIndex >= PlaylistsBox.Items.Count)
+      {
+        playlistIndex--;
+      }
+
+      PlaylistsBox.SelectedIndex = playlistIndex;
+    }
+
+    private void RenamePlaylistButton_Click(object sender, RoutedEventArgs e)
+    {
+      var playlist = PlaylistsBox.SelectedItem as Playlist;
+      if (playlist == null)
+      {
+        return;
+      }
+
+      var dialog = new PromptDialog("Please choose a short name for the playlist.",
+        "Playlist name: ", "New Playlist", playlist.Name);
+
+      var result = dialog.ShowDialog();
+
+      if (!result.HasValue || !result.Value || string.IsNullOrWhiteSpace(dialog.Value))
+      {
+        return;
+      }
+
+      playlist.Name = dialog.Value;
+    }
+
+    private void UpdateEditPlaylistButtonsEnabledState()
+    {
+      var isEnabled = PlaylistsBox.SelectedItem != null && FoldersBox.SelectedItems.Count > 0;
+
+      AddToPlaylistButton.IsEnabled = isEnabled;
+      RemoveFromPlaylistButton.IsEnabled = isEnabled;
     }
 
     private void OnProgress(double percent, string message)
