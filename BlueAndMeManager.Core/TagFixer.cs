@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Extensions.Core.Helpers;
 using TagLib;
 using File = System.IO.File;
 
@@ -18,36 +19,17 @@ namespace BlueAndMeManager.Core
 
   public class TagFixer
   {
-    private readonly string[] _paths;
-    private readonly EFileSelectionMode _fileSelectionMode;
+    private readonly string _rootPath;
+    private readonly string[] _mp3FilePaths;
     private readonly OnProgress _onProgress;
     private readonly OnError _onError;
 
-    private IEnumerable<string> AllFiles
-    {
-      get
-      {
-        switch (_fileSelectionMode)
-        {
-          case EFileSelectionMode.ExplicitFile:
-            return _paths;
-          case EFileSelectionMode.Directory:
-            return _paths.SelectMany(path => Directory.GetFiles(path, "*.mp3", SearchOption.TopDirectoryOnly));
-          case EFileSelectionMode.DirectoryRecursive:
-            return _paths.SelectMany(path => Directory.GetFiles(path, "*.mp3", SearchOption.AllDirectories));
-          default:
-            throw new ArgumentOutOfRangeException();
-        }
-
-      }
-    }
-
-    public TagFixer(IEnumerable<string> paths, EFileSelectionMode fileSelectionMode, OnProgress onProgress = null, OnError onError = null)
+    public TagFixer(string rootPath, IEnumerable<string> mp3FilePaths, OnProgress onProgress = null, OnError onError = null)
     {
       Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-      _paths = paths.ToArray();
-      _fileSelectionMode = fileSelectionMode;
+      _rootPath = rootPath;
+      _mp3FilePaths = mp3FilePaths.ToArray();
       _onProgress = onProgress;
       _onError = onError;
     }
@@ -67,11 +49,15 @@ namespace BlueAndMeManager.Core
       {
         _onProgress?.Invoke(0, "Processing...");
 
-        double allFilesCount = AllFiles.Count();
+        int idsCount = 0;
+        Dictionary<string, int> albumIds = new();
+
+        double allFilesCount = _mp3FilePaths.Length;
         var processedFilesCount = 0;
-        foreach (var mp3FilePath in AllFiles)
+
+        foreach (var mp3FilePath in _mp3FilePaths)
         {
-          _onProgress?.Invoke(processedFilesCount++ / allFilesCount * 100, $"Processing {mp3FilePath}...");
+          _onProgress?.Invoke(processedFilesCount++ / allFilesCount * 100, $"Fixing tags of {mp3FilePath}...");
 
           var mp3File = TagLib.File.Create(mp3FilePath);
 
@@ -91,15 +77,22 @@ namespace BlueAndMeManager.Core
 
           mp3File.Save();
 
+          if (!albumIds.ContainsKey(album))
+          {
+            albumIds[album] = idsCount++;
+          }
+          var newFolderName = $"{albumIds[album]:00}-{album}".RemoveInvalidFileNameChars();
           var newFileName = $"{track:00}-{artist}-{title}.mp3".RemoveInvalidFileNameChars();
-          // ReSharper disable once PossibleNullReferenceException
-          var newFilePath = Path.Combine(Directory.GetParent(mp3FilePath).FullName, newFileName);
+          var newFolderPath = Path.Combine(_rootPath, newFolderName);
+          var newFilePath = Path.Combine(newFolderPath, newFileName);
 
           if (mp3FilePath != newFilePath)
           {
+            Directory.CreateDirectory(newFolderPath);
             File.Move(mp3FilePath, newFilePath);
-
-            movedFiles.Add(mp3FilePath, newFilePath);
+            var oldRelPath = Utilities.GetRelativePath(_rootPath, mp3FilePath);
+            var newRelPath = Utilities.GetRelativePath(_rootPath, newFilePath);
+            movedFiles.Add(oldRelPath, newRelPath);
           }
         }
 

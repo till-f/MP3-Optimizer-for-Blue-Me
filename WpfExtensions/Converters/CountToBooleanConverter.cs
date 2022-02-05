@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Data;
 
-namespace WpfExtensions.Converters
+namespace Extensions.Wpf.Converters
 {
   [ValueConversion(typeof(object), typeof(bool))]
   public class CountToBooleanConverter : IValueConverter

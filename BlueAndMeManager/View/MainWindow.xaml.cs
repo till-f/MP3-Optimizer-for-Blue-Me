@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using BlueAndMeManager.Core;
 using BlueAndMeManager.ViewModel;
-using WpfExtensions.Helpers;
+using Extensions.Wpf;
 using Track = BlueAndMeManager.ViewModel.Track;
 
 namespace BlueAndMeManager.View
@@ -39,7 +37,7 @@ namespace BlueAndMeManager.View
       }
 
       MusicDrive = new MusicDrive(path);
-      MusicDrive.RebuildCache(Dispatcher, OnProgress, OnError);
+      MusicDrive.RebuildCacheAsync(Dispatcher, OnProgress, OnError);
     }
 
     private void FixTagsButton_Click(object sender, RoutedEventArgs e)
@@ -55,16 +53,17 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      var tagFixer = new TagFixer(trackPaths, EFileSelectionMode.ExplicitFile, OnProgress, OnError);
+      var tagFixer = new TagFixer(MusicDrive.FullPath, MusicDrive.TrackPathsInScope, OnProgress, OnError);
       var task = tagFixer.RunAsync();
-      
       task.OnCompletion(() =>
       {
         foreach (var playlist in MusicDrive.Playlists)
         {
+          OnProgress(-1, $"Updating playlist {playlist}...");
           playlist.FilesMoved(task.Result);
         }
-        MusicDrive.RebuildCache(Dispatcher, OnProgress, OnError);
+
+        MusicDrive.RebuildCacheAsync(Dispatcher, OnProgress, OnError);
       });
     }
 

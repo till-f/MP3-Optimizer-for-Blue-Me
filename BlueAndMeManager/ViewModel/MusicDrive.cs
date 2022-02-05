@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 using BlueAndMeManager.Core;
-using WpfExtensions.Helpers;
+using Extensions.Wpf;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.MusicDrive>;
 
 namespace BlueAndMeManager.ViewModel
@@ -84,10 +84,9 @@ namespace BlueAndMeManager.ViewModel
       UpdatePlaylistContainmentStates(SelectedPlaylist);
     }
 
-    public void RebuildCache(Dispatcher dispatcher, OnProgress onProgress, OnError onError)
+    public void RebuildCacheAsync(Dispatcher dispatcher, OnProgress onProgress, OnError onError)
     {
       var task = FilesystemCache.BuildAsync(FullPath, onProgress, onError);
-
       task.OnCompletion(dispatcher, () =>
       {
         if (task.Result != null)
@@ -95,8 +94,6 @@ namespace BlueAndMeManager.ViewModel
           UpdateFromCache(task.Result);
         }
       });
-
-      task.Start();
     }
 
     public void UpdateFromCache(FilesystemCache filesystemCache)

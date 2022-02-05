@@ -1,4 +1,4 @@
-﻿namespace WpfExtensions.Helpers
+﻿namespace Extensions.Core.Helpers
 {
   public static class Boxing
   {

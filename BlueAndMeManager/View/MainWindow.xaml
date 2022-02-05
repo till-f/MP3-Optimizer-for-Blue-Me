@@ -3,10 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:view="clr-namespace:BlueAndMeManager.View"
         xmlns:viewModel="clr-namespace:BlueAndMeManager.ViewModel"
-        xmlns:localConv="clr-namespace:BlueAndMeManager.ViewModel.Converters"
-        xmlns:wpfExtConv="clr-namespace:WpfExtensions.Converters;assembly=WpfExtensions"
+        xmlns:viewModelConv="clr-namespace:BlueAndMeManager.ViewModel.Converters"
+        xmlns:extConv="clr-namespace:Extensions.Wpf.Converters;assembly=Extensions.Wpf"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModel:MusicDrive}"
         d:DesignWidth="600"
@@ -16,9 +15,9 @@
         Height="600"
         >
     <Window.Resources>
-        <localConv:PlaylistContainmentStateToForegroundConverter x:Key="PlaylistContainmentStateToForegroundConverter"/>
-        <localConv:PlaylistContainmentStateToFontWeightConverter x:Key="PlaylistContainmentStateToFontWeightConverter"/>
-        <wpfExtConv:ObjectRefToBooleanConverter x:Key="ObjectRefToBooleanConverter"/>
+        <viewModelConv:PlaylistContainmentStateToForegroundConverter x:Key="PlaylistContainmentStateToForegroundConverter"/>
+        <viewModelConv:PlaylistContainmentStateToFontWeightConverter x:Key="PlaylistContainmentStateToFontWeightConverter"/>
+        <extConv:ObjectRefToBooleanConverter x:Key="ObjectRefToBooleanConverter"/>
     </Window.Resources>
     <DockPanel>
         <Grid DockPanel.Dock="Top" Margin="5">

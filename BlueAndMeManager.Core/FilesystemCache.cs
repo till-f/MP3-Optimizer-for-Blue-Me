@@ -28,6 +28,7 @@ namespace BlueAndMeManager.Core
     {
       FilesystemCache result = new FilesystemCache(rootPath, onProgress, onError);
       var task = new Task<FilesystemCache>(result.Build);
+      task.Start();
       return task;
     }
 
@@ -36,7 +37,6 @@ namespace BlueAndMeManager.Core
       try
       {
         _onProgress?.Invoke(-1, "Reading music files...");
-        Thread.Sleep(5000);
         foreach (var musicFolder in Directory.GetDirectories(_rootPath))
         {
           LinkedList<string> tracks = new();

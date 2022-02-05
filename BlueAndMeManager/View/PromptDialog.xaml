@@ -3,8 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:view="clr-namespace:BlueAndMeManager.View"
-        xmlns:Converters="clr-namespace:WpfExtensions.Converters;assembly=WpfExtensions" 
+        xmlns:extConv="clr-namespace:Extensions.Wpf.Converters;assembly=Extensions.Wpf"
         mc:Ignorable="d"
         x:Name="Window"
         SizeToContent="Height"
@@ -12,7 +11,7 @@
         Loaded="Window_OnLoaded"
         >
     <Window.Resources>
-        <Converters:ObjectRefToCollapsedVisibilityConverter x:Key="ObjectRefToCollapsedVisibilityConverter"/>
+        <extConv:ObjectRefToCollapsedVisibilityConverter x:Key="ObjectRefToCollapsedVisibilityConverter"/>
     </Window.Resources>
     <StackPanel>
         <Label Content="{Binding Message, ElementName=Window}" Margin="10, 10, 10, 5" />

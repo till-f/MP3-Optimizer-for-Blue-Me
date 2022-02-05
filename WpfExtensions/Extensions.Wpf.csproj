@@ -1,17 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Extensions.Core\Extensions.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="taglib-sharp">
-      <HintPath>..\lib\taglib-sharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

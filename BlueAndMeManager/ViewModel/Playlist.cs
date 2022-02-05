@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using BlueAndMeManager.Core;
-using WpfExtensions.Helpers;
+using Extensions.Core.Helpers;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.Playlist>;
 
 namespace BlueAndMeManager.ViewModel
 {
   public class Playlist : DependencyObject
   {
-    private readonly HashSet<string> _entryPaths = new ();
+    private readonly List<string> _entryPaths;
 
     private string _fullPath;
 
@@ -46,10 +47,11 @@ namespace BlueAndMeManager.ViewModel
 
       if (entryPaths != null)
       {
-        foreach (var entryPath in entryPaths)
-        {
-          _entryPaths.Add(entryPath);
-        }
+        _entryPaths = entryPaths.ToList();
+      }
+      else
+      {
+        _entryPaths = new List<string>();
       }
     }
 
@@ -116,10 +118,20 @@ namespace BlueAndMeManager.ViewModel
 
     public void FilesMoved(Dictionary<string, string> taskResult)
     {
-      foreach (var entry in _entryPaths)
+      if (taskResult.Count == 0)
       {
-        // TODO
+        return;
       }
+
+      for (var i = 0; i < _entryPaths.Count; i++)
+      {
+        if (taskResult.ContainsKey(_entryPaths[i]))
+        {
+          _entryPaths[i] = taskResult[_entryPaths[i]];
+        }
+      }
+
+      SaveToFile();
     }
   }
 }

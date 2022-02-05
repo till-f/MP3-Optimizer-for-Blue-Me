@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace WpfExtensions.Helpers
+namespace Extensions.Core.Helpers
 {
   public class Utilities
   {

@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Data;
 
-namespace WpfExtensions.Converters
+namespace Extensions.Wpf.Converters
 {
   [ValueConversion(typeof(object), typeof(Visibility))]
   public class ObjectRefToHiddenVisibilityConverter : IValueConverter

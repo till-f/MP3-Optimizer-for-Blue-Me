@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
-using WpfExtensions.Helpers;
+using Extensions.Core.Helpers;
 using Expression = System.Linq.Expressions.Expression;
 
 namespace WpfExtensions.DependencyProperties
