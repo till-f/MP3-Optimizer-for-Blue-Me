@@ -3,21 +3,18 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using BlueAndMeManager.Core;
+using WpfExtensions.Helpers;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.MusicDrive>;
 
 namespace BlueAndMeManager
 {
   public class MusicDrive : DependencyObject
   {
-    public static readonly DependencyProperty FullPathProperty = RegisterProperty(x => x.FullPath).OnChange(OnFullPathChanged);
-
-    public string FullPath
-    {
-      get => (string)GetValue(FullPathProperty);
-      set => SetValue(FullPathProperty, value);
-    }
+    public string FullPath { get; }
 
     public static readonly DependencyProperty SelectedPlaylistProperty = RegisterProperty(x => x.SelectedPlaylist).OnChange(OnSelectedPlaylistChanged);
 
@@ -31,7 +28,7 @@ namespace BlueAndMeManager
 
     public ObservableCollection<MusicFolder> MusicFolders { get; } = new ();
 
-    public ObservableCollection<Track> Tracks { get; } = new();
+    public ObservableCollection<Track> TracksInSelectedFolders { get; } = new();
 
     public ObservableCollection<MusicFolder> SelectedMusicFolders { get; } = new();
 
@@ -45,9 +42,9 @@ namespace BlueAndMeManager
         {
           return SelectedTracks.Select(file => file.FullPath);
         }
-        else if (Tracks?.Count > 0)
+        else if (TracksInSelectedFolders?.Count > 0)
         {
-          return Tracks.Select(file => file.FullPath);
+          return TracksInSelectedFolders.Select(file => file.FullPath);
         }
         else
         {
@@ -63,14 +60,13 @@ namespace BlueAndMeManager
 
     public void RefreshTracks()
     {
-      Tracks.Clear();
+      TracksInSelectedFolders.Clear();
 
       foreach (var folder in SelectedMusicFolders)
       {
-        foreach (var track in Directory.GetFiles(folder.FullPath, "*.mp3", SearchOption.AllDirectories).Select(s => new Track(folder, s)))
+        foreach (var track in folder.Tracks)
         {
-          SelectedPlaylist?.MarkIfContained(track);
-          Tracks.Add(track);
+          TracksInSelectedFolders.Add(track);
         }
       }
     }
@@ -85,86 +81,69 @@ namespace BlueAndMeManager
       SelectedPlaylist?.RemoveTracks(TrackPathsInScope);
     }
 
-    public void UpdateIsInCurrentListMark()
+    public void UpdatePlaylistContainmentStates()
     {
-      UpdateIsInCurrentListMark(SelectedPlaylist);
+      UpdatePlaylistContainmentStates(SelectedPlaylist);
     }
 
-    private static void OnFullPathChanged(MusicDrive musicDrive, DependencyPropertyChangedEventArgs e)
+    public Task RebuildCacheAsync(Dispatcher dispatcher)
     {
-      var rootFolder = (string)e.NewValue;
+      var musicFolders = new LinkedList<MusicFolder>();
+      var playlists = new LinkedList<Playlist>();
 
-      musicDrive.MusicFolders.Clear();
+      var task = new Task(() => RebuildCache(musicFolders, playlists));
 
-      foreach (var musicFolder in Directory.GetDirectories(rootFolder).Select(s => new MusicFolder(musicDrive, s)))
+      task.OnCompletion(dispatcher, () =>
       {
-        musicDrive.SelectedPlaylist?.MarkIfContained(musicFolder);
-        musicDrive.MusicFolders.Add(musicFolder);
+        UpdateUiAfterRebuildCacheCompletion(musicFolders, playlists);
+      });
+
+      task.Start();
+
+      return task;
+    }
+
+    private void RebuildCache(LinkedList<MusicFolder> musicFolders, LinkedList<Playlist> playlists)
+    {
+      foreach (var musicFolder in Directory.GetDirectories(FullPath).Select(s => new MusicFolder(this, s)))
+      {
+        musicFolder.RebuildCache();
+        musicFolders.AddLast(musicFolder);
       }
 
-      foreach (var playlist in Directory.GetFiles(rootFolder, "*.m3u", SearchOption.TopDirectoryOnly).Select(s => new Playlist(musicDrive, Path.GetFileNameWithoutExtension(s))))
+      foreach (var playlist in Directory.GetFiles(FullPath, "*.m3u", SearchOption.TopDirectoryOnly).Select(s => new Playlist(this, Path.GetFileNameWithoutExtension(s))))
       {
-        musicDrive.Playlists.Add(playlist);
+        playlists.AddLast(playlist);
       }
+    }
+
+    public void UpdateUiAfterRebuildCacheCompletion(LinkedList<MusicFolder> musicFolders, LinkedList<Playlist> playlists)
+    {
+      MusicFolders.Clear();
+
+      foreach (var musicFolder in musicFolders)
+      {
+        MusicFolders.Add(musicFolder);
+      }
+
+      foreach (var playlist in playlists)
+      {
+        Playlists.Add(playlist);
+      }
+
+      UpdatePlaylistContainmentStates(SelectedPlaylist);
     }
 
     private static void OnSelectedPlaylistChanged(MusicDrive musicDrive, DependencyPropertyChangedEventArgs e)
     {
-      musicDrive.UpdateIsInCurrentListMark(e.NewValue as Playlist);
+      musicDrive.UpdatePlaylistContainmentStates(e.NewValue as Playlist);
     }
     
-    private void UpdateIsInCurrentListMark(Playlist playlist)
+    private void UpdatePlaylistContainmentStates(Playlist playlist)
     {
-      ClearMarkedItems();
-
-      if (playlist == null)
-      {
-        return;
-      }
-
-      var folderNames = new HashSet<string>();
-      foreach (var relativePath in playlist.RelativeFilePaths)
-      {
-        var folderName = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[0];
-        folderNames.Add(folderName);
-
-        MarkTrack(relativePath);
-      }
-
-      foreach (var folderName in folderNames)
-      {
-        MarkFolder(folderName);
-      }
-    }
-
-    private void ClearMarkedItems()
-    {
-      foreach (var track in Tracks)
-      {
-        track.IsInCurrentList = false;
-      }
-
       foreach (var musicFolder in MusicFolders)
       {
-        musicFolder.IsInCurrentList = false;
-      }
-    }
-
-    private void MarkTrack(string relativePath)
-    {
-      var track = Tracks.FirstOrDefault(track => track.FullPath.EndsWith(relativePath));
-      if (track != null)
-      {
-        track.IsInCurrentList = true;
-      }
-    }
-
-    private void MarkFolder(string folderName)
-    {
-      var musicFolder = MusicFolders.FirstOrDefault(musicFolder => Path.GetFileName(musicFolder.FullPath) == folderName);
-      if (musicFolder != null)
-      {
-        musicFolder.IsInCurrentList = true;
+        musicFolder.UpdatePlaylistContainmentState(playlist);
       }
     }
   }

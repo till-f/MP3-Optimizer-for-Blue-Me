@@ -68,7 +68,7 @@ namespace BlueAndMeManager
         _relativeFilePaths.Add(relativePath);
       }
 
-      MusicDrive.UpdateIsInCurrentListMark();
+      MusicDrive.UpdatePlaylistContainmentStates();
 
       SaveToFile();
     }
@@ -81,7 +81,7 @@ namespace BlueAndMeManager
         _relativeFilePaths.Remove(relativePath);
       }
 
-      MusicDrive.UpdateIsInCurrentListMark();
+      MusicDrive.UpdatePlaylistContainmentStates();
 
       SaveToFile();
     }
@@ -92,31 +92,17 @@ namespace BlueAndMeManager
       File.Delete(FullPath);
     }
 
-
-    public void MarkIfContained(MusicFolder musicFolder)
-    {
-      var searchedFolderName = Path.GetFileName(musicFolder.FullPath);
-      foreach (var relativePath in RelativeFilePaths)
-      {
-        var folderName = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[0];
-        if (searchedFolderName == folderName)
-        {
-          musicFolder.IsInCurrentList = true;
-          return;
-        }
-      }
-    }
-
-    public void MarkIfContained(Track track)
+    public bool Contains(Track track)
     {
       foreach (var relativePath in RelativeFilePaths)
       {
         if (track.FullPath.EndsWith(relativePath))
         {
-          track.IsInCurrentList = true;
-          return;
+          return true;
         }
       }
+
+      return false;
     }
 
     private void SaveToFile()

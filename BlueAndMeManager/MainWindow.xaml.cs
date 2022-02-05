@@ -39,6 +39,7 @@ namespace BlueAndMeManager
       }
 
       MusicDrive = new MusicDrive(path);
+      MusicDrive.RebuildCacheAsync(Dispatcher);
     }
 
     private void FixTagsButton_Click(object sender, RoutedEventArgs e)
@@ -56,8 +57,8 @@ namespace BlueAndMeManager
 
       var tagFixer = new TagFixer(trackPaths, EFileSelectionMode.ExplicitFile, OnProgress, OnError);
       var task = tagFixer.RunAsync();
-
-      task.OnCompletion(() => Dispatcher.Invoke(() => MusicDrive.RefreshTracks()));
+      
+      task.OnCompletion(() => MusicDrive.RebuildCacheAsync(Dispatcher));
     }
 
     private void FoldersBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)

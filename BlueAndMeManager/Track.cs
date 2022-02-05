@@ -5,24 +5,31 @@ using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<Blue
 
 namespace BlueAndMeManager
 {
-  public class Track : DependencyObject
+  public class Track : DependencyObject, IPlaylistItem
   {
     public MusicFolder MusicFolder { get; }
 
     public string FullPath { get; }
 
-    public static readonly DependencyProperty IsInCurrentListProperty = RegisterProperty(x => x.IsInCurrentList);
+    public static readonly DependencyProperty EPlaylistContainmentStateProperty = RegisterProperty(x => x.PlaylistContainmentState);
 
-    public bool IsInCurrentList
+    public EPlaylistContainmentState PlaylistContainmentState
     {
-      get => (bool)GetValue(IsInCurrentListProperty);
-      set => SetValue(IsInCurrentListProperty, value);
+      get => (EPlaylistContainmentState)GetValue(EPlaylistContainmentStateProperty);
+      private set => SetValue(EPlaylistContainmentStateProperty, value);
     }
 
     public Track(MusicFolder musicFolder, string fullPath)
     {
       MusicFolder = musicFolder;
       FullPath = fullPath;
+    }
+
+    public void UpdatePlaylistContainmentState(Playlist playlist)
+    {
+      PlaylistContainmentState = playlist?.Contains(this) == true
+        ? EPlaylistContainmentState.CompletelyContained
+        : EPlaylistContainmentState.NotContained;
     }
 
     public override string ToString()

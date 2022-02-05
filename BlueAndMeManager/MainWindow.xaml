@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BlueAndMeManager"
+        xmlns:localConv="clr-namespace:BlueAndMeManager.ViewModel.Converters"
         xmlns:wpfExtConv="clr-namespace:WpfExtensions.Converters;assembly=WpfExtensions"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance local:MusicDrive}"
@@ -14,8 +15,8 @@
         Height="600"
         >
     <Window.Resources>
-        <wpfExtConv:BooleanToBoldConverter x:Key="BooleanToBoldConverter"/>
-        <wpfExtConv:CountToBooleanConverter x:Key="CountToBooleanConverter"/>
+        <localConv:PlaylistContainmentStateToForegroundConverter x:Key="PlaylistContainmentStateToForegroundConverter"/>
+        <localConv:PlaylistContainmentStateToFontWeightConverter x:Key="PlaylistContainmentStateToFontWeightConverter"/>
         <wpfExtConv:ObjectRefToBooleanConverter x:Key="ObjectRefToBooleanConverter"/>
     </Window.Resources>
     <DockPanel>
@@ -125,7 +126,10 @@
                          SelectionMode="Extended">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" FontWeight="{Binding IsInCurrentList, Converter={StaticResource BooleanToBoldConverter}}" />
+                            <TextBlock Text="{Binding}" 
+                                       FontWeight="{Binding PlaylistContainmentState, Converter={StaticResource PlaylistContainmentStateToFontWeightConverter}}" 
+                                       Foreground="{Binding PlaylistContainmentState, Converter={StaticResource PlaylistContainmentStateToForegroundConverter}}" 
+                                       />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -138,11 +142,14 @@
                 <Label Grid.Row="0">Tracks:</Label>
                 <ListBox Grid.Row="1" Name="TracksBox"
                          SelectionChanged="TracksBox_OnSelectionChanged"
-                         ItemsSource="{Binding Tracks}"
+                         ItemsSource="{Binding TracksInSelectedFolders}"
                          SelectionMode="Extended">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" FontWeight="{Binding IsInCurrentList, Converter={StaticResource BooleanToBoldConverter}}" />
+                            <TextBlock Text="{Binding}" 
+                                       FontWeight="{Binding PlaylistContainmentState, Converter={StaticResource PlaylistContainmentStateToFontWeightConverter}}" 
+                                       Foreground="{Binding PlaylistContainmentState, Converter={StaticResource PlaylistContainmentStateToForegroundConverter}}" 
+                                       />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
