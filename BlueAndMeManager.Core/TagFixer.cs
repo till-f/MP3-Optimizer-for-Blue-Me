@@ -18,10 +18,6 @@ namespace BlueAndMeManager.Core
 
   public class TagFixer
   {
-    public delegate void OnProgress(double percent, string message);
-
-    public delegate void OnError(string message);
-
     private readonly string[] _paths;
     private readonly EFileSelectionMode _fileSelectionMode;
     private readonly OnProgress _onProgress;

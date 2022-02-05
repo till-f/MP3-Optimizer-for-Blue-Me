@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using BlueAndMeManager.Core;
-using Microsoft.Win32;
 using WpfExtensions.Helpers;
 
 namespace BlueAndMeManager
@@ -39,7 +35,7 @@ namespace BlueAndMeManager
       }
 
       MusicDrive = new MusicDrive(path);
-      MusicDrive.RebuildCacheAsync(Dispatcher);
+      MusicDrive.RebuildCache(Dispatcher, OnProgress, OnError);
     }
 
     private void FixTagsButton_Click(object sender, RoutedEventArgs e)
@@ -58,7 +54,7 @@ namespace BlueAndMeManager
       var tagFixer = new TagFixer(trackPaths, EFileSelectionMode.ExplicitFile, OnProgress, OnError);
       var task = tagFixer.RunAsync();
       
-      task.OnCompletion(() => MusicDrive.RebuildCacheAsync(Dispatcher));
+      task.OnCompletion(() => MusicDrive.RebuildCache(Dispatcher, OnProgress, OnError));
     }
 
     private void FoldersBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -133,7 +129,7 @@ namespace BlueAndMeManager
 
       var playlistIndex = PlaylistsBox.SelectedIndex;
 
-      playlist.Remove();
+      playlist.Delete();
 
       if (playlistIndex >= PlaylistsBox.Items.Count)
       {
@@ -188,7 +184,15 @@ namespace BlueAndMeManager
       Dispatcher.InvokeAsync(() =>
       {
         StatusBar.Content = message;
-        ProgressBar.Value = percent;
+        if (percent < 0)
+        {
+          ProgressBar.IsIndeterminate = true;
+        }
+        else
+        {
+          ProgressBar.IsIndeterminate = false;
+          ProgressBar.Value = percent;
+        }
       });
     }
 

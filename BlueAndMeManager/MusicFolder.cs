@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows;
 
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.MusicFolder>;
@@ -32,16 +31,14 @@ namespace BlueAndMeManager
       private set => SetValue(EPlaylistContainmentStateProperty, value);
     }
 
-    public MusicFolder(MusicDrive musicDrive, string fullPath)
+    public MusicFolder(MusicDrive musicDrive, string fullPath, IEnumerable<string> trackPaths)
     {
       MusicDrive = musicDrive;
       FullPath = fullPath;
-    }
 
-    public void RebuildCache()
-    {
-      foreach (var track in Directory.GetFiles(FullPath, "*.mp3", SearchOption.AllDirectories).Select(s => new Track(this, s)))
+      foreach (var trackPath in trackPaths)
       {
+        var track = new Track(this, trackPath);
         _tracks.Add(track);
       }
     }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using BlueAndMeManager.Core;
@@ -40,23 +39,17 @@ namespace BlueAndMeManager
       set => SetValue(NameProperty, value.RemoveInvalidFileNameChars());
     }
     
-    public Playlist(MusicDrive musicDrive, string name)
+    public Playlist(MusicDrive musicDrive, string name, IEnumerable<string> entryPaths = null)
     {
       MusicDrive = musicDrive;
       Name = name;
 
-      Initialize();
-    }
-
-    private void Initialize()
-    {
-      if (File.Exists(FullPath))
+      if (entryPaths != null)
       {
-        ReadFromFile();
-      }
-      else
-      {
-        File.Create(FullPath);
+        foreach (var entryPath in entryPaths)
+        {
+          _relativeFilePaths.Add(entryPath);
+        }
       }
     }
 
@@ -86,7 +79,7 @@ namespace BlueAndMeManager
       SaveToFile();
     }
 
-    public void Remove()
+    public void Delete()
     {
       MusicDrive.Playlists.Remove(this);
       File.Delete(FullPath);
@@ -107,29 +100,12 @@ namespace BlueAndMeManager
 
     private void SaveToFile()
     {
-      File.WriteAllLines(FullPath, RelativeFilePaths);
-    }
-
-    private void ReadFromFile()
-    {
-      _relativeFilePaths.Clear();
-
-      foreach (var relativePath in File.ReadAllLines(FullPath))
+      if (!File.Exists(FullPath))
       {
-        if (string.IsNullOrWhiteSpace(relativePath))
-        {
-          continue;
-        }
-
-        var fullPath = Path.Combine(MusicDrive.FullPath, relativePath);
-
-        if (!File.Exists(fullPath))
-        {
-          continue;
-        }
-
-        _relativeFilePaths.Add(relativePath);
+        File.Create(FullPath);
       }
+
+      File.WriteAllLines(FullPath, RelativeFilePaths);
     }
 
     private static void OnNameChanged(Playlist playlist, DependencyPropertyChangedEventArgs e)

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using BlueAndMeManager.Core;
@@ -86,59 +84,40 @@ namespace BlueAndMeManager
       UpdatePlaylistContainmentStates(SelectedPlaylist);
     }
 
-    public Task RebuildCacheAsync(Dispatcher dispatcher)
+    public void RebuildCache(Dispatcher dispatcher, OnProgress onProgress, OnError onError)
     {
-      var musicFolders = new LinkedList<MusicFolder>();
-      var playlists = new LinkedList<Playlist>();
-
-      var task = new Task(() => RebuildCache(musicFolders, playlists));
+      var task = FilesystemCache.BuildAsync(FullPath, onProgress, onError);
 
       task.OnCompletion(dispatcher, () =>
       {
-        UpdateUiAfterRebuildCacheCompletion(musicFolders, playlists);
+        if (task.Result != null)
+        {
+          UpdateFromCache(task.Result);
+        }
       });
 
       task.Start();
-
-      return task;
     }
 
-    private void RebuildCache(LinkedList<MusicFolder> musicFolders, LinkedList<Playlist> playlists)
-    {
-      foreach (var musicFolder in Directory.GetDirectories(FullPath).Select(s => new MusicFolder(this, s)))
-      {
-        musicFolder.RebuildCache();
-        musicFolders.AddLast(musicFolder);
-      }
-
-      foreach (var playlist in Directory.GetFiles(FullPath, "*.m3u", SearchOption.TopDirectoryOnly).Select(s => new Playlist(this, Path.GetFileNameWithoutExtension(s))))
-      {
-        playlists.AddLast(playlist);
-      }
-    }
-
-    public void UpdateUiAfterRebuildCacheCompletion(LinkedList<MusicFolder> musicFolders, LinkedList<Playlist> playlists)
+    public void UpdateFromCache(FilesystemCache filesystemCache)
     {
       MusicFolders.Clear();
 
-      foreach (var musicFolder in musicFolders)
+      foreach (var kvp in filesystemCache.MusicCache)
       {
+        var musicFolder = new MusicFolder(this, kvp.Key, kvp.Value);
         MusicFolders.Add(musicFolder);
       }
 
-      foreach (var playlist in playlists)
+      foreach (var kvp in filesystemCache.PlaylistCache)
       {
+        var playlist = new Playlist(this, Path.GetFileNameWithoutExtension(kvp.Key), kvp.Value);
         Playlists.Add(playlist);
       }
 
       UpdatePlaylistContainmentStates(SelectedPlaylist);
     }
 
-    private static void OnSelectedPlaylistChanged(MusicDrive musicDrive, DependencyPropertyChangedEventArgs e)
-    {
-      musicDrive.UpdatePlaylistContainmentStates(e.NewValue as Playlist);
-    }
-    
     private void UpdatePlaylistContainmentStates(Playlist playlist)
     {
       foreach (var musicFolder in MusicFolders)
@@ -146,5 +125,11 @@ namespace BlueAndMeManager
         musicFolder.UpdatePlaylistContainmentState(playlist);
       }
     }
+
+    private static void OnSelectedPlaylistChanged(MusicDrive musicDrive, DependencyPropertyChangedEventArgs e)
+    {
+      musicDrive.UpdatePlaylistContainmentStates(e.NewValue as Playlist);
+    }
+   
   }
 }
