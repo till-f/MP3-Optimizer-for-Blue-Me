@@ -14,6 +14,7 @@
         Height="600"
         >
     <Window.Resources>
+        <wpfExtConv:BooleanToBoldConverter x:Key="BooleanToBoldConverter"/>
         <wpfExtConv:CountToBooleanConverter x:Key="CountToBooleanConverter"/>
         <wpfExtConv:ObjectRefToBooleanConverter x:Key="ObjectRefToBooleanConverter"/>
     </Window.Resources>
@@ -86,7 +87,8 @@
                 <Label Grid.Column="1" Grid.Row="0">Playlists:</Label>
                 <ListBox Grid.Column="1" Grid.Row="1" Name="PlaylistsBox"
                          SelectionChanged="PlaylistsBox_OnSelectionChanged"
-                         ItemsSource="{Binding Playlists}">
+                         ItemsSource="{Binding Playlists}"
+                         SelectedItem="{Binding SelectedPlaylist}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Name}"/>
@@ -108,19 +110,25 @@
                             Name="AddToPlaylistButton"
                             Padding="5,2"
                             ToolTip="Add Selected to Playlist"
-                            Click="AddPlaylistButton_Click"/>
+                            Click="AddTracksToPlaylistButton_Click"/>
                     <Button Content="x" 
                             Name="RemoveFromPlaylistButton"
                             Margin="0,5"
                             Padding="5,2"
                             ToolTip="Remove Selected from Playlist"
-                            Click="RemovePlaylistButton_Click"/>
+                            Click="RemoveTracksFromPlaylistButton_Click"/>
                 </StackPanel>
                 <Label Grid.Column="1" Grid.Row="0">Folders:</Label>
                 <ListBox Grid.Column="1" Grid.Row="1" Name="FoldersBox" 
                          SelectionChanged="FoldersBox_OnSelectionChanged"
                          ItemsSource="{Binding MusicFolders}" 
-                         SelectionMode="Extended"/>
+                         SelectionMode="Extended">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" FontWeight="{Binding IsInCurrentList, Converter={StaticResource BooleanToBoldConverter}}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
             </Grid>
             <Grid Grid.Column="2" Margin="5, 0, 0, 0">
                 <Grid.RowDefinitions>
@@ -131,7 +139,13 @@
                 <ListBox Grid.Row="1" Name="TracksBox"
                          SelectionChanged="TracksBox_OnSelectionChanged"
                          ItemsSource="{Binding Tracks}"
-                         SelectionMode="Extended"/>
+                         SelectionMode="Extended">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" FontWeight="{Binding IsInCurrentList, Converter={StaticResource BooleanToBoldConverter}}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
             </Grid>
         </Grid>
     </DockPanel>

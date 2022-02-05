@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -42,19 +43,10 @@ namespace BlueAndMeManager
 
     private void FixTagsButton_Click(object sender, RoutedEventArgs e)
     {
-      TagFixer tagFixer;
-
-      if (MusicDrive?.SelectedTracks?.Count > 0)
+      IEnumerable<string> trackPaths;
+      if (MusicDrive != null)
       {
-        tagFixer = new TagFixer(MusicDrive.SelectedTracks.Select(file => file.FullPath), EFileSelectionMode.ExplicitFile, OnProgress, OnError);
-      }
-      else if (MusicDrive?.Tracks?.Count > 0)
-      {
-        tagFixer = new TagFixer(MusicDrive.Tracks.Select(file => file.FullPath), EFileSelectionMode.ExplicitFile, OnProgress, OnError);
-      }
-      else if (MusicDrive != null)
-      {
-        tagFixer = new TagFixer(new []{ MusicDrive.FullPath }, EFileSelectionMode.DirectoryRecursive, OnProgress, OnError);
+        trackPaths = MusicDrive.TrackPathsInScope;
       }
       else
       {
@@ -62,6 +54,7 @@ namespace BlueAndMeManager
         return;
       }
 
+      var tagFixer = new TagFixer(trackPaths, EFileSelectionMode.ExplicitFile, OnProgress, OnError);
       var task = tagFixer.RunAsync();
 
       task.OnCompletion(() => Dispatcher.Invoke(() => MusicDrive.RefreshTracks()));
@@ -168,6 +161,16 @@ namespace BlueAndMeManager
       }
 
       playlist.Name = dialog.Value;
+    }
+
+    private void AddTracksToPlaylistButton_Click(object sender, RoutedEventArgs e)
+    {
+      MusicDrive.AddTracksInScopeToPlaylist();
+    }
+
+    private void RemoveTracksFromPlaylistButton_Click(object sender, RoutedEventArgs e)
+    {
+      MusicDrive.RemoveTracksInScopeFromPlaylist();
     }
 
     private void UpdateEditPlaylistButtonsEnabledState()
