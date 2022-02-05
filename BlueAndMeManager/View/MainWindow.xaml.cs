@@ -3,10 +3,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using BlueAndMeManager.Core;
+using BlueAndMeManager.ViewModel;
 using WpfExtensions.Helpers;
+using Track = BlueAndMeManager.ViewModel.Track;
 
-namespace BlueAndMeManager
+namespace BlueAndMeManager.View
 {
   /// <summary>
   /// Interaction logic for MainWindow.xaml

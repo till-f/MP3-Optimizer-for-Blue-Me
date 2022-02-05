@@ -1,4 +1,4 @@
-﻿namespace BlueAndMeManager
+﻿namespace BlueAndMeManager.ViewModel
 {
   interface IPlaylistItem
   {

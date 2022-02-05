@@ -2,9 +2,9 @@
 using System.IO;
 using System.Windows;
 
-using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.MusicFolder>;
+using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.MusicFolder>;
 
-namespace BlueAndMeManager
+namespace BlueAndMeManager.ViewModel
 {
   public enum EPlaylistContainmentState
   {

@@ -1,9 +1,8 @@
 ﻿using System.Windows;
-using System.Windows.Input;
-using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.PromptDialog>;
+using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.View.PromptDialog>;
 
 
-namespace BlueAndMeManager
+namespace BlueAndMeManager.View
 {
   /// <summary>
   /// Interaction logic for PromptDialog.xaml

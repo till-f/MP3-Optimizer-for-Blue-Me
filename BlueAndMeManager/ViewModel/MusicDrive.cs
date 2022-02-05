@@ -6,9 +6,9 @@ using System.Windows;
 using System.Windows.Threading;
 using BlueAndMeManager.Core;
 using WpfExtensions.Helpers;
-using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.MusicDrive>;
+using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.MusicDrive>;
 
-namespace BlueAndMeManager
+namespace BlueAndMeManager.ViewModel
 {
   public class MusicDrive : DependencyObject
   {

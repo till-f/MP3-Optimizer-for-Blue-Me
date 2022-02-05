@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Windows;
 
-using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.Track>;
+using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.Track>;
 
-namespace BlueAndMeManager
+namespace BlueAndMeManager.ViewModel
 {
   public class Track : DependencyObject, IPlaylistItem
   {

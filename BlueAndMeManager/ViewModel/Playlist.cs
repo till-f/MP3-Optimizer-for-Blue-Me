@@ -3,9 +3,9 @@ using System.IO;
 using System.Windows;
 using BlueAndMeManager.Core;
 using WpfExtensions.Helpers;
-using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.Playlist>;
+using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.Playlist>;
 
-namespace BlueAndMeManager
+namespace BlueAndMeManager.ViewModel
 {
   public class Playlist : DependencyObject
   {
