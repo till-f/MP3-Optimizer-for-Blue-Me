@@ -110,7 +110,6 @@ namespace BlueAndMeManager.Core
         { "я", "ya" },
 
         { "&", " and " },
-        { ",", "." },
         { ";", ":" },
         { "\\", "/" },
     };

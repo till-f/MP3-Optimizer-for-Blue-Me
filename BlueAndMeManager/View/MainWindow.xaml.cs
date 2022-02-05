@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -57,7 +58,14 @@ namespace BlueAndMeManager.View
       var tagFixer = new TagFixer(trackPaths, EFileSelectionMode.ExplicitFile, OnProgress, OnError);
       var task = tagFixer.RunAsync();
       
-      task.OnCompletion(() => MusicDrive.RebuildCache(Dispatcher, OnProgress, OnError));
+      task.OnCompletion(() =>
+      {
+        foreach (var playlist in MusicDrive.Playlists)
+        {
+          playlist.FilesMoved(task.Result);
+        }
+        MusicDrive.RebuildCache(Dispatcher, OnProgress, OnError);
+      });
     }
 
     private void FoldersBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)

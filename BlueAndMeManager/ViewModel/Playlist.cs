@@ -9,7 +9,7 @@ namespace BlueAndMeManager.ViewModel
 {
   public class Playlist : DependencyObject
   {
-    private readonly HashSet<string> _relativeFilePaths = new ();
+    private readonly HashSet<string> _entryPaths = new ();
 
     private string _fullPath;
 
@@ -29,7 +29,7 @@ namespace BlueAndMeManager.ViewModel
       }
     }
 
-    public IEnumerable<string> RelativeFilePaths => _relativeFilePaths;
+    public IEnumerable<string> EntryPaths => _entryPaths;
 
     public static readonly DependencyProperty NameProperty = RegisterProperty(x => x.Name).OnChange(OnNameChanged);
 
@@ -48,7 +48,7 @@ namespace BlueAndMeManager.ViewModel
       {
         foreach (var entryPath in entryPaths)
         {
-          _relativeFilePaths.Add(entryPath);
+          _entryPaths.Add(entryPath);
         }
       }
     }
@@ -58,7 +58,7 @@ namespace BlueAndMeManager.ViewModel
       foreach (var trackPath in trackPaths)
       {
         var relativePath = Utilities.GetRelativePath(MusicDrive.FullPath, trackPath);
-        _relativeFilePaths.Add(relativePath);
+        _entryPaths.Add(relativePath);
       }
 
       MusicDrive.UpdatePlaylistContainmentStates();
@@ -71,7 +71,7 @@ namespace BlueAndMeManager.ViewModel
       foreach (var trackPath in trackPaths)
       {
         var relativePath = Utilities.GetRelativePath(MusicDrive.FullPath, trackPath);
-        _relativeFilePaths.Remove(relativePath);
+        _entryPaths.Remove(relativePath);
       }
 
       MusicDrive.UpdatePlaylistContainmentStates();
@@ -87,9 +87,9 @@ namespace BlueAndMeManager.ViewModel
 
     public bool Contains(Track track)
     {
-      foreach (var relativePath in RelativeFilePaths)
+      foreach (var entryPath in EntryPaths)
       {
-        if (track.FullPath.EndsWith(relativePath))
+        if (track.FullPath.EndsWith(entryPath))
         {
           return true;
         }
@@ -105,13 +105,21 @@ namespace BlueAndMeManager.ViewModel
         File.Create(FullPath);
       }
 
-      File.WriteAllLines(FullPath, RelativeFilePaths);
+      File.WriteAllLines(FullPath, EntryPaths);
     }
 
     private static void OnNameChanged(Playlist playlist, DependencyPropertyChangedEventArgs e)
     {
       var playlistFileName = e.NewValue + ".m3u";
       playlist.FullPath = Path.Combine(playlist.MusicDrive.FullPath, playlistFileName);
+    }
+
+    public void FilesMoved(Dictionary<string, string> taskResult)
+    {
+      foreach (var entry in _entryPaths)
+      {
+        // TODO
+      }
     }
   }
 }

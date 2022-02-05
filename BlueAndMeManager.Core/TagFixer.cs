@@ -52,15 +52,17 @@ namespace BlueAndMeManager.Core
       _onError = onError;
     }
 
-    public Task RunAsync()
+    public Task<Dictionary<string, string>> RunAsync()
     {
-      var task = new Task(Run);
+      var task = new Task<Dictionary<string, string>>(Run);
       task.Start();
       return task;
     }
 
-    public void Run()
+    public Dictionary<string, string> Run()
     {
+      Dictionary<string, string> movedFiles = new();
+
       try
       {
         _onProgress?.Invoke(0, "Processing...");
@@ -92,12 +94,22 @@ namespace BlueAndMeManager.Core
           var newFileName = $"{track:00}-{artist}-{title}.mp3".RemoveInvalidFileNameChars();
           // ReSharper disable once PossibleNullReferenceException
           var newFilePath = Path.Combine(Directory.GetParent(mp3FilePath).FullName, newFileName);
-          File.Move(mp3FilePath, newFilePath);
+
+          if (mp3FilePath != newFilePath)
+          {
+            File.Move(mp3FilePath, newFilePath);
+
+            movedFiles.Add(mp3FilePath, newFilePath);
+          }
         }
+
+        return movedFiles;
       }
       catch (Exception e)
       {
         _onError?.Invoke($"{e.GetType().Name}: {e.Message}");
+
+        return movedFiles;
       }
       finally
       {
