@@ -145,7 +145,9 @@ namespace BlueAndMeManager.View
       }
 
       var fullPath = PlaylistUpdater.GetFullPath(MusicDrive.FullPath, dialog.Value.RemoveInvalidFileNameChars());
-      MusicDrive.Playlists.Add(new Playlist(MusicDrive, fullPath));
+      var newPlaylist = new Playlist(MusicDrive, fullPath);
+      MusicDrive.Playlists.Add(newPlaylist);
+      PlaylistsBox.SelectedItem = newPlaylist;
     }
 
     private void RemovePlaylistButton_Click(object sender, RoutedEventArgs e)

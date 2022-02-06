@@ -111,12 +111,14 @@
                             Name="AddToPlaylistButton"
                             Padding="5,2"
                             ToolTip="Add Selection to Playlist"
+                            IsEnabled="False"
                             Click="AddTracksToPlaylistButton_Click"/>
                     <Button Content="x" 
                             Name="RemoveFromPlaylistButton"
                             Margin="0,5"
                             Padding="5,2"
                             ToolTip="Remove Selection from Playlist"
+                            IsEnabled="False"
                             Click="RemoveTracksFromPlaylistButton_Click"/>
                 </StackPanel>
                 <Label Grid.Column="1" Grid.Row="0">Folders:</Label>
