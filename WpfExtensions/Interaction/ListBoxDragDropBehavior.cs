@@ -25,6 +25,8 @@ namespace Extensions.Wpf.Interaction
 
     public ListBoxDragDropBehavior Register(ListBox listBox)
     {
+      listBox.DragOver += ListBox_DragOver;
+
       var contentStyle = listBox.ItemContainerStyle ?? new Style(typeof(ContentControl));
 
       contentStyle.Setters.Add(new Setter(UIElement.AllowDropProperty, true));
@@ -203,6 +205,25 @@ namespace Extensions.Wpf.Interaction
       listBox.ItemContainerStyle = contentStyle;
 
       return this;
+    }
+
+    private void ListBox_DragOver(object sender, DragEventArgs e)
+    {
+      ListBox li = sender as ListBox;
+      ScrollViewer sv = li.FindVisualChild<ScrollViewer>();
+
+      double tolerance = 10;
+      double verticalPos = e.GetPosition(li).Y;
+      double offset = 3;
+
+      if (verticalPos < tolerance) // Top of visible list?
+      {
+        sv.ScrollToVerticalOffset(sv.VerticalOffset - offset); //Scroll up.
+      }
+      else if (verticalPos > li.ActualHeight - tolerance) //Bottom of visible list?
+      {
+        sv.ScrollToVerticalOffset(sv.VerticalOffset + offset); //Scroll down.    
+      }
     }
   }
 }
