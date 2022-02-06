@@ -6,7 +6,6 @@ using System.Windows.Threading;
 using BlueAndMeManager.Core;
 using BlueAndMeManager.ViewModel;
 using Extensions.Wpf;
-using Track = BlueAndMeManager.ViewModel.Track;
 
 namespace BlueAndMeManager.View
 {

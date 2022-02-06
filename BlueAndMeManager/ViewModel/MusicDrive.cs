@@ -3,9 +3,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Threading;
 using BlueAndMeManager.Core;
-using Extensions.Wpf;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.MusicDrive>;
 
 namespace BlueAndMeManager.ViewModel

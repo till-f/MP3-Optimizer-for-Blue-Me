@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Windows;
-
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.Track>;
 
 namespace BlueAndMeManager.ViewModel
