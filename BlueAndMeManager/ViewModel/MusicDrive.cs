@@ -32,6 +32,20 @@ namespace BlueAndMeManager.ViewModel
 
     public ObservableCollection<Track> SelectedTracks { get; } = new();
 
+    public Dictionary<string, IEnumerable<string>> CorePlaylists
+    {
+      get
+      {
+        var playlists = new Dictionary<string, IEnumerable<string>>();
+        foreach (var playlist in Playlists)
+        {
+          playlists[playlist.FullPath] = playlist.EntryPaths;
+        }
+
+        return playlists;
+      }
+    }
+
     public IEnumerable<string> TrackPathsInScope
     {
       get
@@ -84,20 +98,9 @@ namespace BlueAndMeManager.ViewModel
       UpdatePlaylistContainmentStates(SelectedPlaylist);
     }
 
-    public void RebuildCacheAsync(Dispatcher dispatcher, OnProgress onProgress, OnError onError)
-    {
-      var task = FilesystemCache.BuildAsync(FullPath, onProgress, onError);
-      task.OnCompletion(dispatcher, () =>
-      {
-        if (task.Result != null)
-        {
-          UpdateFromCache(task.Result);
-        }
-      });
-    }
-
     public void UpdateFromCache(FilesystemCache filesystemCache)
     {
+      Playlists.Clear();
       MusicFolders.Clear();
 
       foreach (var kvp in filesystemCache.MusicCache)

@@ -187,13 +187,19 @@ namespace BlueAndMeManager.Core
       return Regex.Replace(s, " +", " ");
     }
 
-    public static string RemoveInvalidFileNameChars(this string s)
+    public static string RemoveInvalidFileNameChars(this string s, bool includingSpace = false)
     {
+      var invalidChars = InvalidFileChars;
+      if (includingSpace)
+      {
+        invalidChars += " ";
+      }
+
       var textBuilder = new StringBuilder();
 
       foreach (char c in s)
       {
-        if (!InvalidFileChars.Contains(c))
+        if (!invalidChars.Contains(c))
         {
           textBuilder.Append(c);
         }

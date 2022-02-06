@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using BlueAndMeManager.Core;
 using BlueAndMeManager.ViewModel;
 using Extensions.Wpf;
@@ -28,42 +28,51 @@ namespace BlueAndMeManager.View
 
     private void OpenButton_Click(object sender, RoutedEventArgs e)
     {
-      var path = WorkingPath.Text;
+      var rootPath = WorkingPath.Text;
 
-      if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+      if (string.IsNullOrWhiteSpace(rootPath) || !Directory.Exists(rootPath))
       {
-        OnError($"Invalid path: {path}");
+        OnError($"Invalid path: {rootPath}");
         return;
       }
 
-      MusicDrive = new MusicDrive(path);
-      MusicDrive.RebuildCacheAsync(Dispatcher, OnProgress, OnError);
+      MusicDrive = new MusicDrive(rootPath);
+      RebuildCacheAsync(rootPath, Dispatcher, OnProgress, OnError);
     }
 
     private void FixTagsButton_Click(object sender, RoutedEventArgs e)
     {
-      IEnumerable<string> trackPaths;
-      if (MusicDrive != null)
-      {
-        trackPaths = MusicDrive.TrackPathsInScope;
-      }
-      else
+      if (MusicDrive == null)
       {
         OnError($"No path selected");
         return;
       }
 
-      var tagFixer = new TagFixer(MusicDrive.FullPath, MusicDrive.TrackPathsInScope, OnProgress, OnError);
+      var rootPath = MusicDrive.FullPath;
+      var playlists = MusicDrive.CorePlaylists;
+      var tagFixer = new TagFixer(rootPath, MusicDrive.TrackPathsInScope, OnProgress, OnError);
       var task = tagFixer.RunAsync();
       task.OnCompletion(() =>
       {
-        foreach (var playlist in MusicDrive.Playlists)
+        foreach (var playlist in playlists)
         {
-          OnProgress(-1, $"Updating playlist {playlist}...");
-          playlist.FilesMoved(task.Result);
+          OnProgress(-1, $"Updating playlist {playlist.Key}...");
+          PlaylistUpdater.FilesMoved(playlist.Key, playlist.Value, task.Result);
         }
 
-        MusicDrive.RebuildCacheAsync(Dispatcher, OnProgress, OnError);
+        RebuildCacheAsync(rootPath, Dispatcher, OnProgress, OnError);
+      });
+    }
+
+    private void RebuildCacheAsync(string rootPath, Dispatcher dispatcher, OnProgress onProgress, OnError onError)
+    {
+      var task = FilesystemCache.BuildAsync(rootPath, onProgress, onError);
+      task.OnCompletion(dispatcher, () =>
+      {
+        if (task.Result != null)
+        {
+          MusicDrive.UpdateFromCache(task.Result);
+        }
       });
     }
 
@@ -126,7 +135,7 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      MusicDrive.Playlists.Add(new Playlist(MusicDrive, dialog.Value));
+      MusicDrive.Playlists.Add(new Playlist(MusicDrive, dialog.Value.RemoveInvalidFileNameChars()));
     }
 
     private void RemovePlaylistButton_Click(object sender, RoutedEventArgs e)

@@ -37,13 +37,18 @@ namespace BlueAndMeManager.ViewModel
     public string Name
     {
       get => (string)GetValue(NameProperty);
-      set => SetValue(NameProperty, value.RemoveInvalidFileNameChars());
+      set => SetValue(NameProperty, value);
     }
     
     public Playlist(MusicDrive musicDrive, string name, IEnumerable<string> entryPaths = null)
     {
       MusicDrive = musicDrive;
       Name = name;
+
+      if (!File.Exists(FullPath))
+      {
+        File.Create(FullPath);
+      }
 
       if (entryPaths != null)
       {
@@ -60,12 +65,15 @@ namespace BlueAndMeManager.ViewModel
       foreach (var trackPath in trackPaths)
       {
         var relativePath = Utilities.GetRelativePath(MusicDrive.FullPath, trackPath);
-        _entryPaths.Add(relativePath);
+        if (!_entryPaths.Contains(relativePath))
+        {
+          _entryPaths.Add(relativePath);
+        }
       }
 
       MusicDrive.UpdatePlaylistContainmentStates();
 
-      SaveToFile();
+      Save();
     }
 
     public void RemoveTracks(IEnumerable<string> trackPaths)
@@ -78,7 +86,7 @@ namespace BlueAndMeManager.ViewModel
 
       MusicDrive.UpdatePlaylistContainmentStates();
 
-      SaveToFile();
+      Save();
     }
 
     public void Delete()
@@ -100,38 +108,15 @@ namespace BlueAndMeManager.ViewModel
       return false;
     }
 
-    private void SaveToFile()
+    private void Save()
     {
-      if (!File.Exists(FullPath))
-      {
-        File.Create(FullPath);
-      }
-
-      File.WriteAllLines(FullPath, EntryPaths);
+      PlaylistUpdater.Save(FullPath, EntryPaths);
     }
 
     private static void OnNameChanged(Playlist playlist, DependencyPropertyChangedEventArgs e)
     {
       var playlistFileName = e.NewValue + ".m3u";
       playlist.FullPath = Path.Combine(playlist.MusicDrive.FullPath, playlistFileName);
-    }
-
-    public void FilesMoved(Dictionary<string, string> taskResult)
-    {
-      if (taskResult.Count == 0)
-      {
-        return;
-      }
-
-      for (var i = 0; i < _entryPaths.Count; i++)
-      {
-        if (taskResult.ContainsKey(_entryPaths[i]))
-        {
-          _entryPaths[i] = taskResult[_entryPaths[i]];
-        }
-      }
-
-      SaveToFile();
     }
   }
 }

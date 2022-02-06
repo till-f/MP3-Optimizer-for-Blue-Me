@@ -10,13 +10,6 @@ using File = System.IO.File;
 
 namespace BlueAndMeManager.Core
 {
-  public enum EFileSelectionMode
-  {
-    ExplicitFile,
-    Directory,
-    DirectoryRecursive
-  }
-
   public class TagFixer
   {
     private readonly string _rootPath;
@@ -81,20 +74,26 @@ namespace BlueAndMeManager.Core
           {
             albumIds[album] = idsCount++;
           }
-          var newFolderName = $"{albumIds[album]:00}-{album}".RemoveInvalidFileNameChars();
-          var newFileName = $"{track:00}-{artist}-{title}.mp3".RemoveInvalidFileNameChars();
+          var newFolderName = $"{albumIds[album]:00}-{album}".RemoveInvalidFileNameChars(true);
+          var newFileName = $"{track:00}-{artist}-{title}.mp3".RemoveInvalidFileNameChars(true);
           var newFolderPath = Path.Combine(_rootPath, newFolderName);
           var newFilePath = Path.Combine(newFolderPath, newFileName);
 
           if (mp3FilePath != newFilePath)
           {
-            Directory.CreateDirectory(newFolderPath);
+            if (!Directory.Exists(newFolderPath))
+            {
+              Directory.CreateDirectory(newFolderPath);
+            }
             File.Move(mp3FilePath, newFilePath);
             var oldRelPath = Utilities.GetRelativePath(_rootPath, mp3FilePath);
             var newRelPath = Utilities.GetRelativePath(_rootPath, newFilePath);
             movedFiles.Add(oldRelPath, newRelPath);
           }
         }
+
+        _onProgress?.Invoke(-1, "Cleanup folders...");
+        CleanupFolders();
 
         return movedFiles;
       }
@@ -107,6 +106,17 @@ namespace BlueAndMeManager.Core
       finally
       {
         _onProgress?.Invoke(0, "Idle");
+      }
+    }
+
+    private void CleanupFolders()
+    {
+      foreach (var directory in Directory.GetDirectories(_rootPath, "*", SearchOption.AllDirectories))
+      {
+        if (Directory.Exists(directory) && Directory.GetFiles(directory, "*", SearchOption.AllDirectories).Length == 0)
+        {
+          Directory.Delete(directory, true);
+        }
       }
     }
 
