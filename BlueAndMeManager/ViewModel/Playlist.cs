@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -12,23 +13,9 @@ namespace BlueAndMeManager.ViewModel
   {
     private readonly List<string> _entryPaths;
 
-    private string _fullPath;
-
     public MusicDrive MusicDrive { get; }
 
-    public string FullPath
-    {
-      get => _fullPath;
-      private set
-      {
-        if (_fullPath != null)
-        {
-          File.Move(_fullPath, value);
-        }
-
-        _fullPath = value;
-      }
-    }
+    public string FullPath { get; private set; }
 
     public IEnumerable<string> EntryPaths => _entryPaths;
 
@@ -40,10 +27,11 @@ namespace BlueAndMeManager.ViewModel
       set => SetValue(NameProperty, value);
     }
     
-    public Playlist(MusicDrive musicDrive, string name, IEnumerable<string> entryPaths = null)
+    public Playlist(MusicDrive musicDrive, string fullPath, IEnumerable<string> entryPaths = null)
     {
       MusicDrive = musicDrive;
-      Name = name;
+      FullPath = fullPath;
+      Name = Path.GetFileNameWithoutExtension(fullPath).Trim();
 
       if (!File.Exists(FullPath))
       {
@@ -115,8 +103,12 @@ namespace BlueAndMeManager.ViewModel
 
     private static void OnNameChanged(Playlist playlist, DependencyPropertyChangedEventArgs e)
     {
-      var playlistFileName = e.NewValue + ".m3u";
-      playlist.FullPath = Path.Combine(playlist.MusicDrive.FullPath, playlistFileName);
+      if (e.OldValue == null)
+      {
+        return;
+      }
+
+      playlist.FullPath = PlaylistUpdater.Rename(playlist.FullPath, (string) e.NewValue);
     }
   }
 }

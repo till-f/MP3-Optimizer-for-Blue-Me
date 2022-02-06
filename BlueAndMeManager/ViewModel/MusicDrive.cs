@@ -111,7 +111,7 @@ namespace BlueAndMeManager.ViewModel
 
       foreach (var kvp in filesystemCache.PlaylistCache)
       {
-        var playlist = new Playlist(this, Path.GetFileNameWithoutExtension(kvp.Key), kvp.Value);
+        var playlist = new Playlist(this, kvp.Key, kvp.Value);
         Playlists.Add(playlist);
       }
 

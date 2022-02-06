@@ -48,16 +48,25 @@ namespace BlueAndMeManager.View
         return;
       }
 
+      var result =MessageBox.Show(this,
+        "This will rewrite ID3 tags from the selected files. Data not supported by ID3v1 will be removed! Your files might be renamed and moved. Existing playlists will be updated accordingly. Do you want to continue?",
+        "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+
+      if (result != MessageBoxResult.Yes)
+      {
+        return;
+      }
+
       var rootPath = MusicDrive.FullPath;
       var playlists = MusicDrive.CorePlaylists;
-      var tagFixer = new TagFixer(rootPath, MusicDrive.TrackPathsInScope, OnProgress, OnError);
+      var tagFixer = new Mp3FormatFixer(rootPath, MusicDrive.TrackPathsInScope, OnProgress, OnError);
       var task = tagFixer.RunAsync();
       task.OnCompletion(() =>
       {
         foreach (var playlist in playlists)
         {
           OnProgress(-1, $"Updating playlist {playlist.Key}...");
-          PlaylistUpdater.FilesMoved(playlist.Key, playlist.Value, task.Result);
+          PlaylistUpdater.FormatFixerExecuted(playlist.Key, playlist.Value, task.Result);
         }
 
         RebuildCacheAsync(rootPath, Dispatcher, OnProgress, OnError);
@@ -127,6 +136,7 @@ namespace BlueAndMeManager.View
     {
       var dialog = new PromptDialog("This will create a new playlist. Please choose a short name for the playlist.",
         "Playlist name: ", "New Playlist");
+      dialog.Owner = this;
 
       var result = dialog.ShowDialog();
 
@@ -135,7 +145,8 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      MusicDrive.Playlists.Add(new Playlist(MusicDrive, dialog.Value.RemoveInvalidFileNameChars()));
+      var fullPath = PlaylistUpdater.GetFullPath(MusicDrive.FullPath, dialog.Value.RemoveInvalidFileNameChars());
+      MusicDrive.Playlists.Add(new Playlist(MusicDrive, fullPath));
     }
 
     private void RemovePlaylistButton_Click(object sender, RoutedEventArgs e)
@@ -168,6 +179,7 @@ namespace BlueAndMeManager.View
 
       var dialog = new PromptDialog("Please choose a short name for the playlist.",
         "Playlist name: ", "New Playlist", playlist.Name);
+      dialog.Owner = this;
 
       var result = dialog.ShowDialog();
 
@@ -217,7 +229,7 @@ namespace BlueAndMeManager.View
 
     private void OnError(string message)
     {
-      MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+      MessageBox.Show(this, message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
     }
   }
 }

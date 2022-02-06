@@ -6,8 +6,9 @@
         xmlns:extConv="clr-namespace:Extensions.Wpf.Converters;assembly=Extensions.Wpf"
         mc:Ignorable="d"
         x:Name="Window"
-        SizeToContent="Height"
         Width="400"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
         Loaded="Window_OnLoaded"
         >
     <Window.Resources>

@@ -51,26 +51,7 @@ namespace BlueAndMeManager.Core
         _onProgress?.Invoke(-1, "Reading playlists...");
         foreach (var playlist in Directory.GetFiles(_rootPath, "*.m3u", SearchOption.TopDirectoryOnly))
         {
-          LinkedList<string> entries = new();
-
-          foreach (var relativePath in File.ReadAllLines(playlist))
-          {
-            if (string.IsNullOrWhiteSpace(relativePath))
-            {
-              continue;
-            }
-
-            var fullPath = Path.Combine(_rootPath, relativePath);
-
-            if (!File.Exists(fullPath))
-            {
-              continue;
-            }
-
-            entries.AddLast(relativePath);
-          }
-
-          PlaylistCache[playlist] = entries;
+          PlaylistCache[playlist] = PlaylistUpdater.ReadM3U(_rootPath, playlist);
         }
 
         return this;
