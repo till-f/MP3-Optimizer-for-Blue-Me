@@ -10,14 +10,14 @@ using File = System.IO.File;
 
 namespace BlueAndMeManager.Core
 {
-  public class Mp3FormatFixer
+  public class BlueAndMeFixer
   {
     private readonly string _rootPath;
     private readonly string[] _mp3FilePaths;
     private readonly OnProgress _onProgress;
     private readonly OnError _onError;
 
-    public Mp3FormatFixer(string rootPath, IEnumerable<string> mp3FilePaths, OnProgress onProgress = null, OnError onError = null)
+    public BlueAndMeFixer(string rootPath, IEnumerable<string> mp3FilePaths, OnProgress onProgress = null, OnError onError = null)
     {
       Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 

@@ -10,7 +10,7 @@
         d:DataContext="{d:DesignInstance viewModel:MusicDrive}"
         d:DesignWidth="600"
         d:DesignHeight="450"
-        Title="Blue&amp;Me Playlist Manager and Tag Fixer" 
+        Title="Blue&amp;Me Playlist Manager" 
         Width="1200" 
         Height="600"
         >
@@ -42,7 +42,7 @@
             <Button Grid.Column="2" 
                     HorizontalAlignment="Right" 
                     Padding="10,0" 
-                    Content="Fix Tags"
+                    Content="Apply Blue&amp;Me Fixes"
                     IsEnabled="{Binding FullPath, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
                     Click="FixTagsButton_Click" />
         </Grid>
@@ -110,13 +110,13 @@
                     <Button Content="&lt;"
                             Name="AddToPlaylistButton"
                             Padding="5,2"
-                            ToolTip="Add Selected to Playlist"
+                            ToolTip="Add Selection to Playlist"
                             Click="AddTracksToPlaylistButton_Click"/>
                     <Button Content="x" 
                             Name="RemoveFromPlaylistButton"
                             Margin="0,5"
                             Padding="5,2"
-                            ToolTip="Remove Selected from Playlist"
+                            ToolTip="Remove Selection from Playlist"
                             Click="RemoveTracksFromPlaylistButton_Click"/>
                 </StackPanel>
                 <Label Grid.Column="1" Grid.Row="0">Folders:</Label>

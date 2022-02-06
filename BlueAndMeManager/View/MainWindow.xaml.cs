@@ -58,8 +58,8 @@ namespace BlueAndMeManager.View
 
       var rootPath = MusicDrive.FullPath;
       var playlists = MusicDrive.CorePlaylists;
-      var tagFixer = new Mp3FormatFixer(rootPath, MusicDrive.TrackPathsInScope, OnProgress, OnError);
-      var task = tagFixer.RunAsync();
+      var fixer = new BlueAndMeFixer(rootPath, MusicDrive.TrackPathsInScope, OnProgress, OnError);
+      var task = fixer.RunAsync();
       task.OnCompletion(() =>
       {
         foreach (var playlist in playlists)
