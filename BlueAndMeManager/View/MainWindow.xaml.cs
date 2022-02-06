@@ -135,8 +135,10 @@ namespace BlueAndMeManager.View
     private void AddPlaylistButton_Click(object sender, RoutedEventArgs e)
     {
       var dialog = new PromptDialog("This will create a new playlist. Please choose a short name for the playlist.",
-        "Playlist name: ", "New Playlist");
-      dialog.Owner = this;
+        "Playlist name: ", "New Playlist")
+      {
+        Owner = this
+      };
 
       var result = dialog.ShowDialog();
 
@@ -180,8 +182,10 @@ namespace BlueAndMeManager.View
       }
 
       var dialog = new PromptDialog("Please choose a short name for the playlist.",
-        "Playlist name: ", "New Playlist", playlist.Name);
-      dialog.Owner = this;
+        "Playlist name: ", "New Playlist", playlist.Name)
+      {
+        Owner = this
+      };
 
       var result = dialog.ShowDialog();
 
@@ -191,6 +195,23 @@ namespace BlueAndMeManager.View
       }
 
       playlist.Name = dialog.Value;
+    }
+    
+    private void ReorderPlaylistButton_Click(object sender, RoutedEventArgs e)
+    {
+      var playlist = PlaylistsBox.SelectedItem as Playlist;
+      if (playlist == null)
+      {
+        return;
+      }
+
+      var dialog = new ReorderWindow(playlist)
+      {
+        Owner = this,
+        Title = $"Reorder Playlist {playlist.Name}"
+      };
+
+      dialog.ShowDialog();
     }
 
     private void AddTracksToPlaylistButton_Click(object sender, RoutedEventArgs e)

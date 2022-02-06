@@ -69,21 +69,29 @@
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Column="0" Grid.Row="1" Margin="0, 0, 5, 0">
                     <Button Content="+"
+                            Margin="0,0, 0, 5"
                             Padding="5,2"
                             ToolTip="Add Playlist"
                             IsEnabled="{Binding FullPath, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
                             Click="AddPlaylistButton_Click"/>
-                    <Button Content="-" 
-                            Margin="0,5"
+                    <Button Content="🗑" 
+                            Margin="0,0, 0, 5"
                             Padding="5,2"
-                            ToolTip="Remove Playlist"
+                            ToolTip="Delete Playlist"
                             IsEnabled="{Binding SelectedItem, ElementName=PlaylistsBox, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
                             Click="RemovePlaylistButton_Click"/>
-                    <Button Content="N"
+                    <Button Content="✍"
+                            Margin="0,0, 0, 5"
                             Padding="5,2"
                             ToolTip="Rename Playlist"
                             IsEnabled="{Binding SelectedItem, ElementName=PlaylistsBox, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
                             Click="RenamePlaylistButton_Click"/>
+                    <Button Content="↕"
+                            Margin="0,0, 0, 5"
+                            Padding="5,2"
+                            ToolTip="Reorder Playlist"
+                            IsEnabled="{Binding SelectedItem, ElementName=PlaylistsBox, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
+                            Click="ReorderPlaylistButton_Click"/>
                 </StackPanel>
                 <Label Grid.Column="1" Grid.Row="0">Playlists:</Label>
                 <ListBox Grid.Column="1" Grid.Row="1" Name="PlaylistsBox"
@@ -107,13 +115,13 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Column="0" Grid.Row="1" Margin="5, 0">
-                    <Button Content="&lt;"
+                    <Button Content="🠔"
                             Name="AddToPlaylistButton"
                             Padding="5,2"
                             ToolTip="Add Selection to Playlist"
                             IsEnabled="False"
                             Click="AddTracksToPlaylistButton_Click"/>
-                    <Button Content="x" 
+                    <Button Content="✖" 
                             Name="RemoveFromPlaylistButton"
                             Margin="0,5"
                             Padding="5,2"

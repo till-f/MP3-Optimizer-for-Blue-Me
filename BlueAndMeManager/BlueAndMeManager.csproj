@@ -11,4 +11,17 @@
     <ProjectReference Include="..\WpfExtensions\Extensions.Wpf.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="View\ReorderWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="View\ReorderWindow.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
 </Project>

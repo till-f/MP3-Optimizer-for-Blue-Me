@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -10,13 +11,11 @@ namespace BlueAndMeManager.ViewModel
 {
   public class Playlist : DependencyObject
   {
-    private readonly List<string> _entryPaths;
-
     public MusicDrive MusicDrive { get; }
 
     public string FullPath { get; private set; }
 
-    public IEnumerable<string> EntryPaths => _entryPaths;
+    public ObservableCollection<string> EntryPaths { get; } = new ();
 
     public static readonly DependencyProperty NameProperty = RegisterProperty(x => x.Name).OnChange(OnNameChanged);
 
@@ -37,13 +36,14 @@ namespace BlueAndMeManager.ViewModel
         File.Create(FullPath);
       }
 
-      if (entryPaths != null)
+      if (entryPaths == null)
       {
-        _entryPaths = entryPaths.ToList();
+        return;
       }
-      else
+
+      foreach (var entryPath in entryPaths)
       {
-        _entryPaths = new List<string>();
+        EntryPaths.Add(entryPath);
       }
     }
 
@@ -52,9 +52,9 @@ namespace BlueAndMeManager.ViewModel
       foreach (var trackPath in trackPaths)
       {
         var relativePath = Utilities.GetRelativePath(MusicDrive.FullPath, trackPath);
-        if (!_entryPaths.Contains(relativePath))
+        if (!EntryPaths.Contains(relativePath))
         {
-          _entryPaths.Add(relativePath);
+          EntryPaths.Add(relativePath);
         }
       }
 
@@ -68,12 +68,17 @@ namespace BlueAndMeManager.ViewModel
       foreach (var trackPath in trackPaths)
       {
         var relativePath = Utilities.GetRelativePath(MusicDrive.FullPath, trackPath);
-        _entryPaths.Remove(relativePath);
+        EntryPaths.Remove(relativePath);
       }
 
       MusicDrive.UpdatePlaylistContainmentStates();
 
       Save();
+    }
+
+    public void Save()
+    {
+      PlaylistUpdater.Save(FullPath, EntryPaths);
     }
 
     public void Delete()
@@ -93,11 +98,6 @@ namespace BlueAndMeManager.ViewModel
       }
 
       return false;
-    }
-
-    private void Save()
-    {
-      PlaylistUpdater.Save(FullPath, EntryPaths);
     }
 
     private static void OnNameChanged(Playlist playlist, DependencyPropertyChangedEventArgs e)

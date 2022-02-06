@@ -1,40 +1,42 @@
-﻿<Window x:Class="BlueAndMeManager.View.PromptDialog"
+﻿<Window x:Class="BlueAndMeManager.View.ReorderWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:extConv="clr-namespace:Extensions.Wpf.Converters;assembly=Extensions.Wpf"
+        xmlns:viewModel="clr-namespace:BlueAndMeManager.ViewModel"
         mc:Ignorable="d"
         x:Name="Window"
-        Width="400"
-        SizeToContent="Height"
+        Width="600"
+        Height="600"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
         WindowStyle="ToolWindow"
-        Loaded="Window_OnLoaded"
         >
     <Window.Resources>
         <extConv:ObjectRefToCollapsedVisibilityConverter x:Key="ObjectRefToCollapsedVisibilityConverter"/>
     </Window.Resources>
-    <StackPanel>
-        <Label Content="{Binding Message, ElementName=Window}" Margin="10, 10, 10, 5" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" 
-                   Content="{Binding Query, ElementName=Window}" 
-                   Visibility="{Binding Query, Converter={StaticResource ObjectRefToCollapsedVisibilityConverter}, ElementName=Window}"  />
-            <TextBox Name = "ValueTextBox"
-                     Grid.Column="1" 
-                     TabIndex="0"
-                     Text="{Binding Value, ElementName=Window}" 
-                     VerticalContentAlignment="Center" />
+            <StackPanel Grid.Column="0">
+
+            </StackPanel>
+            <ListBox Name="PlaylistsBox"
+                     Grid.Column="1"
+                     ItemsSource="{Binding ElementName=Window,  Path= PlaylistEntries}"
+                     SelectionMode="Extended"
+                     />
         </Grid>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10" >
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10" >
             <Button Content="OK" Width="80" IsDefault="True" Margin="10, 0" Click="Ok_Click" />
             <Button Content="Cancel" Width="80" Click="Cancel_Click" />
         </StackPanel>
-    </StackPanel>
+    </Grid>
 </Window>
