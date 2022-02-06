@@ -86,7 +86,7 @@
                             ToolTip="Rename Playlist"
                             IsEnabled="{Binding SelectedItem, ElementName=PlaylistsBox, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
                             Click="RenamePlaylistButton_Click"/>
-                    <Button Content="↕"
+                    <Button Content="🗘"
                             Margin="0,0, 0, 5"
                             Padding="5,2"
                             ToolTip="Reorder Playlist"
@@ -115,7 +115,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Column="0" Grid.Row="1" Margin="5, 0">
-                    <Button Content="🠔"
+                    <Button Content="ᐊ"
                             Name="AddToPlaylistButton"
                             Padding="5,2"
                             ToolTip="Add Selection to Playlist"

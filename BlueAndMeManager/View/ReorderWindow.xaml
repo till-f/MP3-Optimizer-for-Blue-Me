@@ -31,8 +31,13 @@
             <ListBox Name="PlaylistsBox"
                      Grid.Column="1"
                      ItemsSource="{Binding ElementName=Window,  Path= PlaylistEntries}"
-                     SelectionMode="Extended"
-                     />
+                     SelectionMode="Extended">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10" >
             <Button Content="OK" Width="80" IsDefault="True" Margin="10, 0" Click="Ok_Click" />

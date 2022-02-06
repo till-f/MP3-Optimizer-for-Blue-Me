@@ -27,7 +27,7 @@ namespace BlueAndMeManager.View
         PlaylistEntries.Add(new PlaylistEntry(entryPath));
       }
 
-      new ItemsControlDragDropBehavior(PlaylistsBox_OnDragStarted, PlaylistBox_OnDrop).Register(PlaylistsBox);
+      new ListBoxDragDropBehavior(PlaylistsBox_OnDragStarted, PlaylistBox_OnDrop).Register(PlaylistsBox);
     }
 
     private void PlaylistsBox_OnDragStarted(DependencyObject source)
