@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -48,7 +49,7 @@ namespace BlueAndMeManager.View
       }
 
       var result =MessageBox.Show(this,
-        "This will rewrite ID3 tags from the selected files. Data not supported by ID3v1 will be removed! Your files might be renamed and moved. Existing playlists will be updated accordingly. Do you want to continue?",
+        $"CAUTION! This will overwrite the meta information (ID3 tags) of the {MusicDrive.TrackPathsInScope.Count()} selected files. Information may be removed or altered to fulfill Blue&Me restrictions!\n\nYour files might be renamed, but the loaded playlists will be updated accordingly.\n\nDo you want to continue?",
         "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 
       if (result != MessageBoxResult.Yes)
