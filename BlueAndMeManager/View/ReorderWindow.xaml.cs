@@ -27,7 +27,9 @@ namespace BlueAndMeManager.View
         PlaylistEntries.Add(new PlaylistEntry(entryPath));
       }
 
-      new ListBoxDragDropBehavior(PlaylistsBox_OnDragStarted, PlaylistBox_OnDrop).Register(PlaylistsBox);
+      new ListBoxDragDropBehavior(PlaylistsBox)
+        .ApplyDragSourceBehaviorToItems(PlaylistsBox_OnDragStarted)
+        .ApplyDropTargetBehaviorToItems(PlaylistBox_OnDrop, ListBoxDragDropBehavior.EDropTargetKind.BetweenItems);
     }
 
     private void PlaylistsBox_OnDragStarted(DependencyObject source)
@@ -35,19 +37,18 @@ namespace BlueAndMeManager.View
       DragDrop.DoDragDrop(source, source, DragDropEffects.Move);
     }
 
-    private void PlaylistBox_OnDrop(object sender, DragEventArgs dragEventArgs)
+    private void PlaylistBox_OnDrop(ListBoxItem targetItem, DragEventArgs dragEventArgs)
     {
       var source = (ListBoxItem) dragEventArgs.Data.GetData(typeof(ListBoxItem));
-      var target = (ListBoxItem) sender;
 
-      if (target.IsSelected)
+      if (targetItem.IsSelected)
       {
         return;
       }
 
       // ReSharper disable once PossibleNullReferenceException
       var sourceEntry = (PlaylistEntry) source.DataContext;
-      var targetEntry = (PlaylistEntry) target.DataContext;
+      var targetEntry = (PlaylistEntry) targetItem.DataContext;
       var sourceIndex = PlaylistEntries.IndexOf(sourceEntry);
       var targetIndex = PlaylistEntries.IndexOf(targetEntry);
 

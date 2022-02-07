@@ -28,7 +28,6 @@ namespace Extensions.Wpf
 
     public static T FindVisualChild<T>(this DependencyObject obj) where T : DependencyObject
     {
-      // Search immediate children first (breadth-first)
       for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
       {
         DependencyObject child = VisualTreeHelper.GetChild(obj, i);
