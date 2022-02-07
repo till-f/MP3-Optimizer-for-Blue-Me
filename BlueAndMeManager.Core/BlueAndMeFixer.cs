@@ -92,7 +92,7 @@ namespace BlueAndMeManager.Core
         }
 
         _onProgress?.Invoke(-1, "Cleanup folders...");
-        CleanupFolders();
+        FilesystemCache.CleanupFolders(_rootPath);
 
         return movedFiles;
       }
@@ -105,17 +105,6 @@ namespace BlueAndMeManager.Core
       finally
       {
         _onProgress?.Invoke(0, "Idle");
-      }
-    }
-
-    private void CleanupFolders()
-    {
-      foreach (var directory in Directory.GetDirectories(_rootPath, "*", SearchOption.AllDirectories))
-      {
-        if (Directory.Exists(directory) && Directory.GetFiles(directory, "*", SearchOption.AllDirectories).Length == 0)
-        {
-          Directory.Delete(directory, true);
-        }
       }
     }
 

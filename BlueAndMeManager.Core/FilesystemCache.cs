@@ -64,5 +64,45 @@ namespace BlueAndMeManager.Core
         _onProgress?.Invoke(0, "Idle");
       }
     }
+
+    public static Task DeleteFilesAsync(string rootPath, IEnumerable<string> filesToDelete, OnProgress onProgress, OnError onError)
+    {
+      var task = new Task(() =>
+      {
+        try
+        {
+          foreach (var trackPath in filesToDelete)
+          {
+            onProgress(0, $"Deleting {trackPath}...");
+            File.Delete(trackPath);
+          }
+
+          CleanupFolders(rootPath);
+        }
+        catch (Exception e)
+        {
+          onError(e.Message);
+        }
+        finally
+        {
+          onProgress(0, "Idle");
+        }
+      });
+      task.Start();
+
+      return task;
+    }
+
+    public static void CleanupFolders(string rootPath)
+    {
+      foreach (var directory in Directory.GetDirectories(rootPath, "*", SearchOption.AllDirectories))
+      {
+        if (Directory.Exists(directory) && Directory.GetFiles(directory, "*", SearchOption.AllDirectories).Length == 0)
+        {
+          Directory.Delete(directory, true);
+        }
+      }
+    }
+
   }
 }

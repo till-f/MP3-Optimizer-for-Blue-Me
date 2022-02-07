@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -39,7 +41,17 @@ namespace BlueAndMeManager.View
 
       if (!targetItem.IsSelected)
       {
-        MessageBox.Show($"Target list is not the current list.\n\nAre you sure to add the tracks to playlist '{playlist.Name}'?");
+        var result =MessageBox.Show(this,
+          $"The target playlist is not the active one.\n\nDo you really want to add the tracks to playlist '{playlist.Name}'?",
+          "Add to Inactive Playlist",
+          MessageBoxButton.YesNo,
+          MessageBoxImage.Question,
+          MessageBoxResult.Yes);
+
+        if (result != MessageBoxResult.Yes)
+        {
+          return;
+        }
       }
 
       var sourceItem = (ListBoxItem)e.Data.GetData(typeof(ListBoxItem));
@@ -136,7 +148,7 @@ namespace BlueAndMeManager.View
 
       MusicDrive.RefreshTracks();
 
-      UpdateEditPlaylistButtonsEnabledState();
+      UpdateTrackButtonsEnabledState();
     }
 
     private void TracksBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -155,11 +167,13 @@ namespace BlueAndMeManager.View
       {
         MusicDrive.SelectedTracks.Remove((Track)folder);
       }
+
+      UpdateTrackButtonsEnabledState();
     }
 
     private void PlaylistsBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      UpdateEditPlaylistButtonsEnabledState();
+      UpdateTrackButtonsEnabledState();
     }
 
     private void AddPlaylistButton_Click(object sender, RoutedEventArgs e)
@@ -183,7 +197,7 @@ namespace BlueAndMeManager.View
       PlaylistsBox.SelectedItem = newPlaylist;
     }
 
-    private void RemovePlaylistButton_Click(object sender, RoutedEventArgs e)
+    private void DeletePlaylistButton_Click(object sender, RoutedEventArgs e)
     {
       var playlist = PlaylistsBox.SelectedItem as Playlist;
       if (playlist == null)
@@ -253,13 +267,45 @@ namespace BlueAndMeManager.View
     {
       MusicDrive.RemoveTracksInScopeFromPlaylist();
     }
-
-    private void UpdateEditPlaylistButtonsEnabledState()
+    
+    private void DeleteTracksFromDriveButton_Click(object sender, RoutedEventArgs e)
     {
-      var isEnabled = PlaylistsBox.SelectedItem != null && FoldersBox.SelectedItems.Count > 0;
+      if (FoldersBox.SelectedItems.Count == 0 && TracksBox.SelectedItems.Count == 0)
+      {
+        return;
+      }
 
-      AddToPlaylistButton.IsEnabled = isEnabled;
-      RemoveFromPlaylistButton.IsEnabled = isEnabled;
+      var result = MessageBox.Show(this, 
+        $"Do you really want to delete the selected {MusicDrive.TrackPathsInScope.Count()} files?",
+        "Delete Tracks",
+        MessageBoxButton.YesNo,
+        MessageBoxImage.Warning,
+        MessageBoxResult.Yes);
+
+      if (result != MessageBoxResult.Yes)
+      {
+        return;
+      }
+
+      foreach (var playlist in MusicDrive.Playlists)
+      {
+        playlist.RemoveTracks(MusicDrive.TrackPathsInScope);
+      }
+
+      var rootPath = MusicDrive.FullPath;
+      var task = FilesystemCache.DeleteFilesAsync(rootPath, MusicDrive.TrackPathsInScope.ToList(), OnProgress, OnError);
+      task.OnCompletion(() => RebuildCacheAsync(rootPath, Dispatcher, OnProgress, OnError));
+    }
+
+    private void UpdateTrackButtonsEnabledState()
+    {
+      var canAddRemoveToPlaylist = PlaylistsBox.SelectedItem != null && FoldersBox.SelectedItems.Count > 0;
+
+      AddToPlaylistButton.IsEnabled = canAddRemoveToPlaylist;
+      RemoveFromPlaylistButton.IsEnabled = canAddRemoveToPlaylist;
+
+      var canDeleteTracks = FoldersBox.SelectedItems.Count > 0 || TracksBox.SelectedItems.Count > 0;
+      DeleteTracksButton.IsEnabled = canDeleteTracks;
     }
 
     private void OnProgress(double percent, string message)
