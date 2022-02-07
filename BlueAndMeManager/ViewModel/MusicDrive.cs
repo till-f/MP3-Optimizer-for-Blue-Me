@@ -50,11 +50,11 @@ namespace BlueAndMeManager.ViewModel
       {
         if (SelectedTracks?.Count > 0)
         {
-          return SelectedTracks.Select(file => file.FullPath);
+          return SelectedTracks.Select(x => x.FullPath);
         }
         else if (TracksInSelectedFolders?.Count > 0)
         {
-          return TracksInSelectedFolders.Select(file => file.FullPath);
+          return TracksInSelectedFolders.Select(x => x.FullPath);
         }
         else
         {

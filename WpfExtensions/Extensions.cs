@@ -46,5 +46,13 @@ namespace Extensions.Wpf
 
       return null;
     }
+
+    public static T FindVisualParent<T>(this DependencyObject dependencyObject) where T : DependencyObject
+    {
+      var parent = VisualTreeHelper.GetParent(dependencyObject);
+      if (parent == null) return null;
+      var parentT = parent as T;
+      return parentT ?? FindVisualParent<T>(parent);
+    }
   }
 }

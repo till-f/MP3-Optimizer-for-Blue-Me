@@ -12,7 +12,7 @@ namespace BlueAndMeManager.ViewModel
     CompletelyContained
   }
 
-  public class MusicFolder : DependencyObject, IPlaylistItem
+  public class MusicFolder : DependencyObject, IPlaylistItem, ITracksContainer
   {
     private readonly List<Track> _tracks = new ();
 

@@ -1,14 +1,17 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.Track>;
 
 namespace BlueAndMeManager.ViewModel
 {
-  public class Track : DependencyObject, IPlaylistItem
+  public class Track : DependencyObject, IPlaylistItem, ITracksContainer
   {
     public MusicFolder MusicFolder { get; }
 
     public string FullPath { get; }
+
+    public IEnumerable<Track> Tracks => new[] { this };
 
     public static readonly DependencyProperty EPlaylistContainmentStateProperty = RegisterProperty(x => x.PlaylistContainmentState);
 

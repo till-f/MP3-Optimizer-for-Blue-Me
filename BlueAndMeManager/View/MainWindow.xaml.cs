@@ -1,12 +1,15 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Threading;
 using BlueAndMeManager.Core;
 using BlueAndMeManager.ViewModel;
 using Extensions.Wpf;
+using Extensions.Wpf.Interaction;
 
 namespace BlueAndMeManager.View
 {
@@ -24,6 +27,33 @@ namespace BlueAndMeManager.View
     public MainWindow()
     {
       InitializeComponent();
+
+      new ListBoxDragDropBehavior(PlaylistsBox).ApplyDropTargetBehaviorToItems(PlaylistBox_OnDrop);
+      new ListBoxDragDropBehavior(FoldersBox).ApplyDragSourceBehaviorToItems();
+      new ListBoxDragDropBehavior(TracksBox).ApplyDragSourceBehaviorToItems();
+    }
+
+    private void PlaylistBox_OnDrop(ListBoxItem targetItem, DragEventArgs e)
+    {
+      var playlist = (Playlist)targetItem.DataContext;
+
+      if (!targetItem.IsSelected)
+      {
+        MessageBox.Show($"Target list is not the current list.\n\nAre you sure to add the tracks to playlist '{playlist.Name}'?");
+      }
+
+      var sourceItem = (ListBoxItem)e.Data.GetData(typeof(ListBoxItem));
+      var listBox = sourceItem.FindVisualParent<ListBox>();
+
+      List<string> trackPaths = new();
+
+      foreach (var trackContainer in listBox.SelectedItems)
+      {
+        trackPaths.AddRange(((ITracksContainer)trackContainer).Tracks.Select(x => x.FullPath));
+      }
+
+      playlist.AddTracks(trackPaths);
+      PlaylistsBox.SelectedItem = playlist;
     }
 
     private void OpenButton_Click(object sender, RoutedEventArgs e)

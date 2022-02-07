@@ -17,7 +17,7 @@ namespace Extensions.Wpf.Interaction
     private readonly ListBox _listBox;
 
     // only used for DragSource
-    private Action<DependencyObject> _onDragStarted;
+    private Action<ListBox, ListBoxItem> _customOnDrag;
     private Point _startPos;
     private ListBoxItem _startDragItem;
     private ListBoxItem _lastMouseDownItem;
@@ -32,9 +32,9 @@ namespace Extensions.Wpf.Interaction
       _listBox = listBox;
     }
 
-    public ListBoxDragDropBehavior ApplyDragSourceBehaviorToItems(Action<DependencyObject> onDragStarted)
+    public ListBoxDragDropBehavior ApplyDragSourceBehaviorToItems(Action<ListBox, ListBoxItem> customOnDrag = null)
     {
-      _onDragStarted = onDragStarted;
+      _customOnDrag = customOnDrag;
 
       _listBox.SelectionMode = SelectionMode.Extended;
 
@@ -164,7 +164,14 @@ namespace Extensions.Wpf.Interaction
 
       if (isDraggedByMinimum && _startDragItem != null)
       {
-        _onDragStarted.Invoke(_startDragItem);
+        if (_customOnDrag != null)
+        {
+          _customOnDrag?.Invoke(_listBox, _startDragItem);
+        }
+        else
+        {
+          DragDrop.DoDragDrop(_startDragItem, _startDragItem, DragDropEffects.Move);
+        }
       }
     }
 
