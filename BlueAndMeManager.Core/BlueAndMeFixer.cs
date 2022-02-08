@@ -92,7 +92,7 @@ namespace BlueAndMeManager.Core
         }
 
         _onProgress?.Invoke(-1, "Cleanup folders...");
-        FilesystemCache.CleanupFolders(_rootPath);
+        FilesystemHelper.CleanupFolders(_rootPath);
 
         return movedFiles;
       }

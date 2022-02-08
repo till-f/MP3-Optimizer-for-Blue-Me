@@ -26,22 +26,35 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Grid>
+            <Grid Grid.Column="0" Grid.ColumnSpan="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Path:" Padding="0, 5"/>
-                <TextBox Grid.Column="1" Name="WorkingPath" Width="Auto" Margin="10, 0" VerticalContentAlignment="Center" Text="C:\Data\Temp\mp3s"/>
-                <Button Grid.Column="2"
+                <Label Grid.Column="0" Grid.Row="0" Content="Path:" Padding="0, 5"/>
+                <TextBox Grid.Column="1" Grid.Row="0" 
+                         Name="WorkingPath" 
+                         Width="Auto" 
+                         Margin="10, 0" 
+                         VerticalContentAlignment="Center" 
+                         Text="C:\Data\Temp\mp3s"/>
+                <Button Grid.Column="2" Grid.Row="0"
                         Content="Open/Refresh"
                         Padding="10,0" 
                         Click="OpenButton_Click"/>
+                <CheckBox Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" 
+                          Name="SkipMissingTracksCheckBox"
+                          Margin="10, 5" VerticalAlignment="Center" Content="Remove missing tracks from playlists" />
             </Grid>
-            <Button Grid.Column="2" 
+            <Button Grid.Column="2"
+                    VerticalAlignment="Top"
                     HorizontalAlignment="Right" 
-                    Padding="10,0" 
+                    Padding="10,5" 
                     Content="Apply Blue&amp;Me Fixes"
                     IsEnabled="{Binding FullPath, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
                     Click="FixTagsButton_Click" />

@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using BlueAndMeManager.Core;
 using Extensions.Core.Helpers;
@@ -28,8 +29,10 @@ namespace BlueAndMeManager.ViewModel
     public Playlist(MusicDrive musicDrive, string fullPath, IEnumerable<string> entryPaths = null)
     {
       MusicDrive = musicDrive;
-      FullPath = fullPath;
       Name = Path.GetFileNameWithoutExtension(fullPath).Trim();
+
+      // fake rename (will add spaces to the file name)
+      FullPath = PlaylistUpdater.Rename(fullPath, Name);
 
       if (!File.Exists(FullPath))
       {
@@ -60,7 +63,7 @@ namespace BlueAndMeManager.ViewModel
 
       MusicDrive.UpdatePlaylistContainmentStates();
 
-      Save();
+      SaveAsync();
     }
 
     public void RemoveTracks(IEnumerable<string> trackPaths)
@@ -73,12 +76,12 @@ namespace BlueAndMeManager.ViewModel
 
       MusicDrive.UpdatePlaylistContainmentStates();
 
-      Save();
+      SaveAsync();
     }
 
-    public void Save()
+    public Task SaveAsync()
     {
-      PlaylistUpdater.Save(FullPath, EntryPaths);
+      return PlaylistUpdater.SaveAsync(FullPath, EntryPaths);
     }
 
     public void Delete()

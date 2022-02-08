@@ -111,6 +111,7 @@ namespace BlueAndMeManager.ViewModel
       {
         var playlist = new Playlist(this, kvp.Key, kvp.Value);
         Playlists.Add(playlist);
+        playlist.SaveAsync();
       }
 
       UpdatePlaylistContainmentStates(SelectedPlaylist);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Extensions.Core.Helpers;
 
 namespace BlueAndMeManager.Core
@@ -10,6 +11,9 @@ namespace BlueAndMeManager.Core
   { 
     // trailing whitespaces to hide the extension on the car screen
     private const string PlaylistExtension = "            .m3u";
+
+    // lock to ensure that only one playlist is saved at a time (changes executed one-by-one)
+    private static readonly object SaveLock = new ();
 
     public static string GetFullPath(string rootPath, string name)
     {
@@ -44,19 +48,19 @@ namespace BlueAndMeManager.Core
           }
         }
 
-        Save(fullPath, entryPaths);
+        SaveAsync(fullPath, entryPaths);
       }
 
       Rename(fullPath, Path.GetFileNameWithoutExtension(fullPath).Trim());
     }
 
-    public static LinkedList<string> ReadM3U(string rootPath, string fullPlaylistPath)
+    public static LinkedList<string> ReadM3U(string rootPath, string fullPlaylistPath, bool skipMissingTracks)
     {
       LinkedList<string> entries = new();
 
       foreach (var line in File.ReadAllLines(fullPlaylistPath))
       {
-        var playlistName = Path.GetFileName(fullPlaylistPath);
+        var playlistName = Path.GetFileNameWithoutExtension(fullPlaylistPath).Trim();
 
         if (string.IsNullOrWhiteSpace(line))
         {
@@ -65,7 +69,7 @@ namespace BlueAndMeManager.Core
 
         if (line.StartsWith("#"))
         {
-          throw new Exception($"Error in playlist {playlistName}: Extended M3U not supported.");
+          throw new Exception($"Error in playlist '{playlistName}':\nExtended M3U not supported.");
         }
 
         var relativePath = line;
@@ -77,25 +81,49 @@ namespace BlueAndMeManager.Core
           }
           catch (Exception e)
           {
-            throw new Exception($"Error in playlist {playlistName}: {e.Message}", e);
+            throw new Exception($"Error in playlist '{playlistName}':\n{e.Message}", e);
           }
         }
 
         var fullPath = Path.Combine(rootPath, relativePath);
-        if (!File.Exists(fullPath))
-        {
-          throw new Exception($"Error in playlist {playlistName}: File does not exist: '{line}'.");
-        }
 
-        entries.AddLast(relativePath);
+        if (File.Exists(fullPath))
+        {
+          entries.AddLast(relativePath);
+        }
+        else if (!skipMissingTracks)
+        {
+          throw new Exception($"Error in playlist '{playlistName}':\nFile does not exist: '{line}'.");
+        }
       }
 
       return entries;
     }
 
-    public static void Save(string fullPath, IEnumerable<string> entryPaths)
+    public static Task SaveAsync(string fullPath, IEnumerable<string> entryPaths)
     {
-      File.WriteAllLines(fullPath, entryPaths);
+      var task = new Task(() =>
+      {
+        try
+        {
+          MessagePresenter.UpdateProgress(-1, "Saving Playlist...");
+          lock (SaveLock)
+          {
+            File.WriteAllLines(fullPath, entryPaths);
+          }
+        }
+        catch (Exception e)
+        {
+          MessagePresenter.ShowError(e.Message);
+        }
+        finally
+        {
+          MessagePresenter.UpdateProgress(0, "Idle");
+        }
+      });
+      
+      task.Start();
+      return task;
     }
   }
 }

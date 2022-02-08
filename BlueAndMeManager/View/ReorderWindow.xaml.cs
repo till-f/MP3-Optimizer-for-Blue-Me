@@ -86,7 +86,7 @@ namespace BlueAndMeManager.View
         _playlist.EntryPaths.Add(entry.RelativePath);
       }
 
-      _playlist.Save();
+      _playlist.SaveAsync();
 
       DialogResult = true;
     }

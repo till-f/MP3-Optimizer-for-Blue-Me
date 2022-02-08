@@ -30,6 +30,8 @@ namespace BlueAndMeManager.View
     {
       InitializeComponent();
 
+      MessagePresenter.Init(OnProgress, OnError);
+
       new ListBoxDragDropBehavior(PlaylistsBox).ApplyDropTargetBehaviorToItems(PlaylistBox_OnDrop);
       new ListBoxDragDropBehavior(FoldersBox).ApplyDragSourceBehaviorToItems();
       new ListBoxDragDropBehavior(TracksBox).ApplyDragSourceBehaviorToItems();
@@ -79,7 +81,7 @@ namespace BlueAndMeManager.View
       }
 
       MusicDrive = new MusicDrive(rootPath);
-      RebuildCacheAsync(rootPath, Dispatcher, OnProgress, OnError);
+      RebuildCacheAsync(rootPath, SkipMissingTracksCheckBox.IsChecked == true, Dispatcher);
     }
 
     private void FixTagsButton_Click(object sender, RoutedEventArgs e)
@@ -101,23 +103,23 @@ namespace BlueAndMeManager.View
 
       var rootPath = MusicDrive.FullPath;
       var playlists = MusicDrive.CorePlaylists;
-      var fixer = new BlueAndMeFixer(rootPath, MusicDrive.TrackPathsInScope, OnProgress, OnError);
+      var fixer = new BlueAndMeFixer(rootPath, MusicDrive.TrackPathsInScope);
       var task = fixer.RunAsync();
       task.OnCompletion(() =>
       {
         foreach (var playlist in playlists)
         {
-          OnProgress(-1, $"Updating playlist {playlist.Key}...");
+          MessagePresenter.UpdateProgress(-1, $"Updating playlist {playlist.Key}...");
           PlaylistUpdater.FormatFixerExecuted(playlist.Key, playlist.Value, task.Result);
         }
 
-        RebuildCacheAsync(rootPath, Dispatcher, OnProgress, OnError);
+        RebuildCacheAsync(rootPath, false, Dispatcher);
       });
     }
 
-    private void RebuildCacheAsync(string rootPath, Dispatcher dispatcher, OnProgress onProgress, OnError onError)
+    private void RebuildCacheAsync(string rootPath, bool skipMissingTracks, Dispatcher dispatcher)
     {
-      var task = FilesystemCache.BuildAsync(rootPath, onProgress, onError);
+      var task = FilesystemHelper.BuildCacheAsync(rootPath, skipMissingTracks);
       task.OnCompletion(dispatcher, () =>
       {
         if (task.Result != null)
@@ -293,8 +295,8 @@ namespace BlueAndMeManager.View
       }
 
       var rootPath = MusicDrive.FullPath;
-      var task = FilesystemCache.DeleteFilesAsync(rootPath, MusicDrive.TrackPathsInScope.ToList(), OnProgress, OnError);
-      task.OnCompletion(() => RebuildCacheAsync(rootPath, Dispatcher, OnProgress, OnError));
+      var task = FilesystemHelper.DeleteFilesAsync(rootPath, MusicDrive.TrackPathsInScope.ToList());
+      task.OnCompletion(() => RebuildCacheAsync(rootPath, false, Dispatcher));
     }
 
     private void UpdateTrackButtonsEnabledState()
@@ -328,7 +330,11 @@ namespace BlueAndMeManager.View
 
     private void OnError(string message)
     {
-      MessageBox.Show(this, message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+      Debug.Print($"Error: {message}");
+      Dispatcher.InvokeAsync(() =>
+      {
+        MessageBox.Show(this, message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+      });
     }
   }
 }
