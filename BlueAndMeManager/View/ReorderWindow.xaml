@@ -40,8 +40,8 @@
             </ListBox>
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10" >
-            <Button Content="OK" Width="80" IsDefault="True" Margin="10, 0" Click="Ok_Click" />
-            <Button Content="Cancel" Width="80" Click="Cancel_Click" />
+            <Button Content="OK" Width="80" IsDefault="True" Margin="10, 0" Padding="5" Click="Ok_Click" />
+            <Button Content="Cancel" Width="80" IsCancel="true" Padding="5" Click="Cancel_Click" />
         </StackPanel>
     </Grid>
 </Window>
