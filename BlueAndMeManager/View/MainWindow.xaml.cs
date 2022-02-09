@@ -137,8 +137,6 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      TracksBox.SelectedItems.Clear();
-
       foreach (var folder in e.AddedItems)
       {
         MusicDrive.SelectedMusicFolders.Add((MusicFolder)folder);

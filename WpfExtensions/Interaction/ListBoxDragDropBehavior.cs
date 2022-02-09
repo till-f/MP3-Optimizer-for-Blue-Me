@@ -75,6 +75,7 @@ namespace Extensions.Wpf.Interaction
 
       e.Handled = true;
 
+      item.Focus();
       _lastMouseDownAlreadySelectedItem = null;
       _startDragItem = null;
 
@@ -240,7 +241,7 @@ namespace Extensions.Wpf.Interaction
     {
       var borderColor1 = Colors.RoyalBlue;
       var borderColor2 = Colors.RoyalBlue;
-      borderColor2.A = 128;
+      borderColor2.A = 80;
 
       switch (kind)
       {
