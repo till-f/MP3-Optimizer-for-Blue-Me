@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using BlueAndMeManager.Core;
@@ -178,6 +179,26 @@ namespace BlueAndMeManager.View
       UpdateTrackButtonsEnabledState();
     }
 
+    private void FoldersOrTracksBox_KeyDown(object sender, KeyEventArgs e)
+    {
+      if (e.Key == Key.Return)
+      {
+        MusicDrive.AddTracksInScopeToPlaylist();
+      }
+
+      if (e.Key == Key.Delete)
+      {
+        if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+        {
+          AskAndDeleteTracksInScope();
+        }
+        else
+        {
+          MusicDrive.RemoveTracksInScopeFromPlaylist();
+        }
+      }
+    }
+
     private void AddPlaylistButton_Click(object sender, RoutedEventArgs e)
     {
       var dialog = new PromptDialog("This will create a new playlist. Please choose a short name for the playlist.",
@@ -272,12 +293,28 @@ namespace BlueAndMeManager.View
     
     private void DeleteTracksFromDriveButton_Click(object sender, RoutedEventArgs e)
     {
+      AskAndDeleteTracksInScope();
+    }
+
+    private void UpdateTrackButtonsEnabledState()
+    {
+      var canAddRemoveToPlaylist = PlaylistsBox.SelectedItem != null && FoldersBox.SelectedItems.Count > 0;
+
+      AddToPlaylistButton.IsEnabled = canAddRemoveToPlaylist;
+      RemoveFromPlaylistButton.IsEnabled = canAddRemoveToPlaylist;
+
+      var canDeleteTracks = FoldersBox.SelectedItems.Count > 0 || TracksBox.SelectedItems.Count > 0;
+      DeleteTracksButton.IsEnabled = canDeleteTracks;
+    }
+
+    private void AskAndDeleteTracksInScope()
+    {
       if (FoldersBox.SelectedItems.Count == 0 && TracksBox.SelectedItems.Count == 0)
       {
         return;
       }
 
-      var result = MessageBox.Show(this, 
+      var result = MessageBox.Show(this,
         $"Do you really want to delete the selected {MusicDrive.TrackPathsInScope.Count()} files?",
         "Delete Tracks",
         MessageBoxButton.YesNo,
@@ -297,17 +334,6 @@ namespace BlueAndMeManager.View
       var rootPath = MusicDrive.FullPath;
       var task = FilesystemHelper.DeleteFilesAsync(rootPath, MusicDrive.TrackPathsInScope.ToList());
       task.OnCompletion(() => RebuildCacheAsync(rootPath, false, Dispatcher));
-    }
-
-    private void UpdateTrackButtonsEnabledState()
-    {
-      var canAddRemoveToPlaylist = PlaylistsBox.SelectedItem != null && FoldersBox.SelectedItems.Count > 0;
-
-      AddToPlaylistButton.IsEnabled = canAddRemoveToPlaylist;
-      RemoveFromPlaylistButton.IsEnabled = canAddRemoveToPlaylist;
-
-      var canDeleteTracks = FoldersBox.SelectedItems.Count > 0 || TracksBox.SelectedItems.Count > 0;
-      DeleteTracksButton.IsEnabled = canDeleteTracks;
     }
 
     private void OnProgress(double percent, string message)

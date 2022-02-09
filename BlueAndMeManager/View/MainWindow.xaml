@@ -134,27 +134,28 @@
                             Name="AddToPlaylistButton"
                             Padding="5,2"
                             Margin="0,0, 0, 5"
-                            ToolTip="Add Selection to Playlist"
+                            ToolTip="Add Selection to Playlist (Return)"
                             IsEnabled="False"
                             Click="AddTracksToPlaylistButton_Click"/>
                     <Button Content="❌" 
                             Name="RemoveFromPlaylistButton"
                             Padding="5,2"
                             Margin="0,0, 0, 5"
-                            ToolTip="Remove Selection from Playlist"
+                            ToolTip="Remove Selection from Playlist (Delete)"
                             IsEnabled="False"
                             Click="RemoveTracksFromPlaylistButton_Click"/>
                     <Button Content="🗑" 
                             Name="DeleteTracksButton"
                             Padding="5,2"
                             Margin="0,0, 0, 5"
-                            ToolTip="Delete Selection from Drive"
+                            ToolTip="Delete Selection from Drive (Shift + Delete)"
                             IsEnabled="False"
                             Click="DeleteTracksFromDriveButton_Click"/>
                 </StackPanel>
                 <Label Grid.Column="1" Grid.Row="0">Folders:</Label>
                 <ListBox Grid.Column="1" Grid.Row="1" Name="FoldersBox" 
                          SelectionChanged="FoldersBox_OnSelectionChanged"
+                         KeyDown="FoldersOrTracksBox_KeyDown"
                          ItemsSource="{Binding MusicFolders}" 
                          SelectionMode="Extended">
                     <ListBox.ItemTemplate>
@@ -175,6 +176,7 @@
                 <Label Grid.Row="0">Tracks:</Label>
                 <ListBox Grid.Row="1" Name="TracksBox"
                          SelectionChanged="TracksBox_OnSelectionChanged"
+                         KeyDown="FoldersOrTracksBox_KeyDown"
                          ItemsSource="{Binding TracksInSelectedFolders}"
                          SelectionMode="Extended">
                     <ListBox.ItemTemplate>
