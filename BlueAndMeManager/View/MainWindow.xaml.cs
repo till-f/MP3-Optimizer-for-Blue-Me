@@ -36,6 +36,8 @@ namespace BlueAndMeManager.View
       new ListBoxDragDropBehavior(PlaylistsBox).ApplyDropTargetBehaviorToItems(PlaylistBox_OnDrop);
       new ListBoxDragDropBehavior(FoldersBox).ApplyDragSourceBehaviorToItems();
       new ListBoxDragDropBehavior(TracksBox).ApplyDragSourceBehaviorToItems();
+
+      WorkingPath.Text = RegistrySettings.GetLastPath();
     }
 
     private void PlaylistBox_OnDrop(ListBoxItem targetItem, DragEventArgs e)
@@ -81,6 +83,7 @@ namespace BlueAndMeManager.View
         return;
       }
 
+      RegistrySettings.SetLastPath(rootPath);
       MusicDrive = new MusicDrive(rootPath);
       RebuildCacheAsync(rootPath, SkipMissingTracksCheckBox.IsChecked == true, Dispatcher);
     }
