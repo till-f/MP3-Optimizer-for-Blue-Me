@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using BlueAndMeManager.Core;
+using Extensions.Core;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.MusicDrive>;
 
 namespace BlueAndMeManager.ViewModel
@@ -70,14 +71,19 @@ namespace BlueAndMeManager.ViewModel
 
     public void RefreshTracks()
     {
-      TracksInSelectedFolders.Clear();
+      LinkedList<Track> newTracks = new(SelectedMusicFolders.SelectMany(x => x.Tracks));
 
-      foreach (var folder in SelectedMusicFolders)
+      TracksInSelectedFolders.RemoveWhere(x => !newTracks.Contains(x));
+
+      int lastIdx = 0;
+      foreach (var newTrack in newTracks)
       {
-        foreach (var track in folder.Tracks)
+        if (!TracksInSelectedFolders.Contains(newTrack))
         {
-          TracksInSelectedFolders.Add(track);
+          TracksInSelectedFolders.Insert(lastIdx, newTrack);
         }
+
+        lastIdx++;
       }
     }
     
@@ -98,21 +104,57 @@ namespace BlueAndMeManager.ViewModel
 
     public void UpdateFromCache(FilesystemCache filesystemCache)
     {
-      Playlists.Clear();
-      MusicFolders.Clear();
+      // remove deleted folders
+      MusicFolders.RemoveWhere(x => !filesystemCache.MusicCache.ContainsKey(x.FullPath));
 
+      // remove deleted playlists
+      Playlists.RemoveWhere(x => !filesystemCache.PlaylistCache.ContainsKey(x.FullPath));
+
+      // insert folders in correct order, reusing existing objects
+      var lastIdx = 0;
       foreach (var kvp in filesystemCache.MusicCache)
       {
-        var musicFolder = new MusicFolder(this, kvp.Key, kvp.Value);
-        MusicFolders.Add(musicFolder);
+        var musicFolder = MusicFolders.FirstOrDefault(x => x.FullPath == kvp.Key);
+        if (musicFolder == null)
+        {
+          musicFolder = new MusicFolder(this, kvp.Key, kvp.Value);
+          MusicFolders.Insert(lastIdx, musicFolder);
+        }
+        else
+        {
+          musicFolder.UpdateTracks(kvp.Value);
+        }
+
+        lastIdx++;
       }
 
+      // insert playlists in correct order, reusing existing objects
+      lastIdx = 0;
       foreach (var kvp in filesystemCache.PlaylistCache)
       {
-        var playlist = new Playlist(this, kvp.Key, kvp.Value);
-        Playlists.Add(playlist);
-        playlist.SaveAsync();
+        var playlist = Playlists.FirstOrDefault(x => x.FullPath == kvp.Key);
+        bool isNewList = false;
+        if (playlist == null)
+        {
+          playlist = new Playlist(this, kvp.Key, kvp.Value);
+          Playlists.Insert(lastIdx, playlist);
+        }
+        else
+        {
+          isNewList = true;
+          playlist.UpdateTracks(kvp.Value);
+        }
+
+        if (isNewList)
+        {
+          // always save new list to make sure that files skipped during parsing are permanently removed
+          playlist.SaveAsync();
+        }
+
+        lastIdx++;
       }
+
+      RefreshTracks();
 
       UpdatePlaylistContainmentStates(SelectedPlaylist);
     }

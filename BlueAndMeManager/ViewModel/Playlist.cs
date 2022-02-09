@@ -2,9 +2,11 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Windows;
 using BlueAndMeManager.Core;
+using Extensions.Core;
 using Extensions.Core.Helpers;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.Playlist>;
 
@@ -111,6 +113,21 @@ namespace BlueAndMeManager.ViewModel
       }
 
       playlist.FullPath = PlaylistUpdater.Rename(playlist.FullPath, (string) e.NewValue);
+    }
+
+    public void UpdateTracks(LinkedList<string> newEntryPaths)
+    {
+      EntryPaths.RemoveWhere(x => !newEntryPaths.Contains(x));
+
+      var lastIdx = 0;
+      foreach (var newEntryPath in newEntryPaths)
+      {
+        if (!EntryPaths.Contains(newEntryPath))
+        {
+          EntryPaths.Insert(lastIdx, newEntryPath);
+        }
+        lastIdx++;
+      }
     }
   }
 }

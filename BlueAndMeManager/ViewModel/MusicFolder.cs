@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
+using Extensions.Core;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.MusicFolder>;
 
 namespace BlueAndMeManager.ViewModel
@@ -78,6 +80,24 @@ namespace BlueAndMeManager.ViewModel
     public override string ToString()
     {
       return Path.GetFileName(FullPath);
+    }
+
+    public void UpdateTracks(LinkedList<string> newTrackPaths)
+    {
+      _tracks.RemoveWhere(x => !newTrackPaths.Contains(x.FullPath));
+
+      var lastIdx = 0;
+      foreach (var newTrackPath in newTrackPaths)
+      {
+        var track = _tracks.Find(x => x.FullPath == newTrackPath);
+        if (track == null)
+        {
+          track = new Track(this, newTrackPath);
+          _tracks.Insert(lastIdx, track);
+        }
+
+        lastIdx++;
+      }
     }
   }
 }
