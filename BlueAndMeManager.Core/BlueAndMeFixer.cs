@@ -73,8 +73,8 @@ namespace BlueAndMeManager.Core
           mp3File.Save();
 
           // ReSharper disable once PossibleNullReferenceException
-          var newFolderName = SanitizeName(Directory.GetParent(mp3FilePath).Name.RemoveInvalidFileNameChars(), 30);
-          var newFileName = SanitizeName(Path.GetFileNameWithoutExtension(mp3FilePath).RemoveInvalidFileNameChars(), 60) + ".mp3";
+          var newFolderName = SanitizeName(Directory.GetParent(mp3FilePath).Name.RemoveInvalidFileNameChars());
+          var newFileName = SanitizeName(Path.GetFileNameWithoutExtension(mp3FilePath).RemoveInvalidFileNameChars()) + ".mp3";
           var newFolderPath = Path.Combine(_rootPath, newFolderName);
           var newFilePath = Path.Combine(newFolderPath, newFileName);
 
@@ -108,7 +108,7 @@ namespace BlueAndMeManager.Core
       }
     }
 
-    private static string SanitizeName(string fullCharsetString, int maxLength)
+    private static string SanitizeName(string fullCharsetString, int maxLength = 0)
     {
       var sanitizedString = fullCharsetString
         .SanitizeByMap()                  // applies proper replacements like "ä -> ae"

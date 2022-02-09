@@ -92,7 +92,7 @@ namespace BlueAndMeManager.Core
     {
       foreach (var directory in Directory.GetDirectories(rootPath, "*", SearchOption.AllDirectories))
       {
-        if (Directory.Exists(directory) && Directory.GetFiles(directory, "*", SearchOption.AllDirectories).Length == 0)
+        if (Directory.Exists(directory) && Directory.GetFiles(directory, "*.mp3", SearchOption.AllDirectories).Length == 0)
         {
           Directory.Delete(directory, true);
         }
