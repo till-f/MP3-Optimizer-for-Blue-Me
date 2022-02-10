@@ -12,9 +12,6 @@
         WindowStartupLocation="CenterOwner"
         WindowStyle="ToolWindow"
         >
-    <Window.Resources>
-        <extConv:ObjectRefToCollapsedVisibilityConverter x:Key="ObjectRefToCollapsedVisibilityConverter"/>
-    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
