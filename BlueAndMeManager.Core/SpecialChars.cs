@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -7,7 +6,7 @@ namespace BlueAndMeManager.Core
 {
   public static class SpecialChars
   {
-    private static readonly string InvalidFileChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+    private static readonly string InvalidFileChars = "\\/:*?\"<>|";
 
     // ASCII 0x20-0x7E special chars:
     // .,:;_-#+=*~!?§$%&/\()}{]['"`
@@ -187,10 +186,10 @@ namespace BlueAndMeManager.Core
       return Regex.Replace(s, " +", " ");
     }
 
-    public static string RemoveInvalidFileNameChars(this string s, bool includingSpace = false)
+    public static string RemoveInvalidFileNameChars(this string s, bool alsoRemoveSpace = false)
     {
       var invalidChars = InvalidFileChars;
-      if (includingSpace)
+      if (alsoRemoveSpace)
       {
         invalidChars += " ";
       }

@@ -14,17 +14,13 @@ namespace BlueAndMeManager.Core
   {
     private readonly string _rootPath;
     private readonly string[] _mp3FilePaths;
-    private readonly OnProgress _onProgress;
-    private readonly OnError _onError;
 
-    public BlueAndMeFixer(string rootPath, IEnumerable<string> mp3FilePaths, OnProgress onProgress = null, OnError onError = null)
+    public BlueAndMeFixer(string rootPath, IEnumerable<string> mp3FilePaths)
     {
       Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
       _rootPath = rootPath;
       _mp3FilePaths = mp3FilePaths.ToArray();
-      _onProgress = onProgress;
-      _onError = onError;
     }
 
     public Task<Dictionary<string, string>> RunAsync()
@@ -38,6 +34,7 @@ namespace BlueAndMeManager.Core
     {
       Dictionary<string, string> movedFiles = new();
 
+      string currentFile = "";
       try
       {
         double allFilesCount = _mp3FilePaths.Length;
@@ -45,7 +42,9 @@ namespace BlueAndMeManager.Core
 
         foreach (var mp3FilePath in _mp3FilePaths)
         {
-          _onProgress?.Invoke(processedFilesCount++ / allFilesCount * 100, $"Fixing tags of {mp3FilePath}...");
+          currentFile = mp3FilePath;
+
+          MessagePresenter.UpdateProgress(processedFilesCount++ / allFilesCount * 100, $"Fixing tags of {mp3FilePath}...");
 
           var mp3File = TagLib.File.Create(mp3FilePath);
 
@@ -73,8 +72,8 @@ namespace BlueAndMeManager.Core
           mp3File.Save();
 
           // ReSharper disable once PossibleNullReferenceException
-          var newFolderName = SanitizeName(Directory.GetParent(mp3FilePath).Name.RemoveInvalidFileNameChars());
-          var newFileName = SanitizeName(Path.GetFileNameWithoutExtension(mp3FilePath).RemoveInvalidFileNameChars()) + ".mp3";
+          var newFolderName = SanitizeName(Directory.GetParent(mp3FilePath).Name).RemoveInvalidFileNameChars();
+          var newFileName = SanitizeName(Path.GetFileNameWithoutExtension(mp3FilePath)).RemoveInvalidFileNameChars() + ".mp3";
           var newFolderPath = Path.Combine(_rootPath, newFolderName);
           var newFilePath = Path.Combine(newFolderPath, newFileName);
 
@@ -91,20 +90,20 @@ namespace BlueAndMeManager.Core
           }
         }
 
-        _onProgress?.Invoke(-1, "Cleanup folders...");
+        MessagePresenter.UpdateProgress(-1, "Cleanup folders...");
         FilesystemHelper.CleanupFolders(_rootPath);
 
         return movedFiles;
       }
       catch (Exception e)
       {
-        _onError?.Invoke($"{e.GetType().Name}: {e.Message}");
+        MessagePresenter.ShowError($"{e.GetType().Name}: Could not convert file '{currentFile}'. {e.Message}");
 
         return movedFiles;
       }
       finally
       {
-        _onProgress?.Invoke(0, "Idle");
+        MessagePresenter.UpdateProgress(0, "Idle");
       }
     }
 
@@ -122,7 +121,7 @@ namespace BlueAndMeManager.Core
         sanitizedString = sanitizedString.Substring(0, maxLength);
       }
       
-      return sanitizedString;
+      return sanitizedString.Trim();
     }
   }
 }
