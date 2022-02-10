@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -26,6 +27,22 @@ namespace BlueAndMeManager.View
     {
       get => (bool)GetValue(IsIdleProperty);
       set => SetValue(IsIdleProperty, value);
+    }
+
+    public static readonly DependencyProperty CanCancelProperty = RegisterProperty(x => x.CanCancel).Default(false).OnChange(OnCanCancelChanged);
+
+    public bool CanCancel
+    {
+      get => (bool)GetValue(CanCancelProperty);
+      set => SetValue(CanCancelProperty, value);
+    }
+
+    public static readonly DependencyProperty CancelButtonVisibilityProperty = RegisterProperty(x => x.CancelButtonVisibility).Default(Visibility.Collapsed).Coerce(CoerceCancelButtonVisibility);
+
+    public Visibility CancelButtonVisibility
+    {
+      get => (Visibility)GetValue(CancelButtonVisibilityProperty);
+      set => SetValue(CancelButtonVisibilityProperty, value);
     }
 
     public MusicDrive MusicDrive
@@ -120,6 +137,7 @@ namespace BlueAndMeManager.View
       }
 
       IsIdle = false;
+      CanCancel = true;
       var rootPath = MusicDrive.FullPath;
       var playlists = MusicDrive.CorePlaylists;
       var fixer = new BlueAndMeFixer(rootPath, MusicDrive.TrackPathsInScope);
@@ -140,6 +158,7 @@ namespace BlueAndMeManager.View
     private void CancelWork_Clicked(object sender, RoutedEventArgs e)
     {
       FilesystemHelper.CancelRequested = true;
+      CanCancel = false;
     }
 
     private Task RebuildCacheAsync(string rootPath, bool skipMissingTracks, Dispatcher dispatcher)
@@ -354,6 +373,7 @@ namespace BlueAndMeManager.View
       }
 
       IsIdle = false;
+      CanCancel = true;
 
       foreach (var playlist in MusicDrive.Playlists)
       {
@@ -369,10 +389,30 @@ namespace BlueAndMeManager.View
       });
     }
 
-    private static void OnIsIdleChanged(MainWindow sender, DependencyPropertyChangedEventArgs e)
+    private static void OnIsIdleChanged(MainWindow window, DependencyPropertyChangedEventArgs e)
     {
-      // always reset CancelRequested when work is started or finished
+      if ((bool)e.NewValue)
+      {
+        window.CanCancel = false;
+      }
       FilesystemHelper.CancelRequested = false;
+
+      window.CoerceValue(CancelButtonVisibilityProperty);
+    }
+
+    private static void OnCanCancelChanged(MainWindow window, DependencyPropertyChangedEventArgs e)
+    {
+      window.CoerceValue(CancelButtonVisibilityProperty);
+    }
+
+    private static Visibility CoerceCancelButtonVisibility(MainWindow window, Visibility value)
+    {
+      if (window.IsIdle || !window.CanCancel)
+      {
+        return Visibility.Collapsed;
+      }
+
+      return Visibility.Visible;
     }
 
     private void OnProgress(double percent, string message)

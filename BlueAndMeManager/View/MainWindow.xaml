@@ -16,7 +16,6 @@
         Height="600"
         >
     <Window.Resources>
-        <extConv:TrueToCollapsedVisibilityConverter x:Key="TrueToCollapsedVisibilityConverter"/>
         <viewModelConv:PlaylistContainmentStateToForegroundConverter x:Key="PlaylistContainmentStateToForegroundConverter"/>
         <viewModelConv:PlaylistContainmentStateToFontWeightConverter x:Key="PlaylistContainmentStateToFontWeightConverter"/>
         <extConv:ObjectRefToBooleanConverter x:Key="ObjectRefToBooleanConverter"/>
@@ -72,7 +71,7 @@
                     <ProgressBar Name="ProgressBar" Height="10" Orientation="Horizontal" Value="0"/>
                 </StackPanel>
                 <Button Grid.Column="1" Margin="2" Padding="5, 0" 
-                        Visibility="{Binding IsIdle, Converter={StaticResource TrueToCollapsedVisibilityConverter}, ElementName=Window}" 
+                        Visibility="{Binding CancelButtonVisibility, ElementName=Window}" 
                         Content="Cancel"
                         IsCancel="True"
                         Click="CancelWork_Clicked"
