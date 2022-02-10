@@ -7,7 +7,7 @@ using Extensions.Core.Helpers;
 
 namespace BlueAndMeManager.Core
 {
-  public static class PlaylistUpdater
+  public static class PlaylistService
   { 
     // trailing whitespaces to hide the extension on the car screen
     private const string PlaylistExtension = "            .m3u";
@@ -20,15 +20,22 @@ namespace BlueAndMeManager.Core
       return Path.Combine(rootPath, name + PlaylistExtension);
     }
 
-    public static string Rename(string oldFullPath, string newName)
+    public static string CreateOrRename(string oldFullPath, string newName)
     {
       // ReSharper disable once PossibleNullReferenceException
       var rootPath = Directory.GetParent(oldFullPath).FullName;
       var newFullPath = GetFullPath(rootPath, newName);
 
-      if (oldFullPath != newFullPath)
+      lock (SaveLock)
       {
-        File.Move(oldFullPath, newFullPath);
+        if (File.Exists(oldFullPath) && oldFullPath != newFullPath)
+        {
+          File.Move(oldFullPath, newFullPath);
+        }
+        else if (!File.Exists(newFullPath))
+        {
+          File.Create(newFullPath);
+        }
       }
 
       return newFullPath;
@@ -51,7 +58,7 @@ namespace BlueAndMeManager.Core
         SaveAsync(fullPath, entryPaths);
       }
 
-      Rename(fullPath, Path.GetFileNameWithoutExtension(fullPath).Trim());
+      CreateOrRename(fullPath, Path.GetFileNameWithoutExtension(fullPath).Trim());
     }
 
     public static LinkedList<string> ReadM3U(string rootPath, string fullPlaylistPath, bool skipMissingTracks)
@@ -106,7 +113,7 @@ namespace BlueAndMeManager.Core
       {
         try
         {
-          MessagePresenter.UpdateProgress(-1, "Saving Playlist...");
+          MessagePresenter.UpdateProgress(-1, $"Saving Playlist {fullPath}");
           lock (SaveLock)
           {
             File.WriteAllLines(fullPath, entryPaths);
@@ -124,6 +131,30 @@ namespace BlueAndMeManager.Core
       
       task.Start();
       return task;
+    }
+
+    public static bool Delete(string fullPath)
+    {
+      try
+      {
+        MessagePresenter.UpdateProgress(-1, $"Deleting Playlist {fullPath}");
+
+        lock (SaveLock)
+        {
+          File.Delete(fullPath);
+        }
+
+        return true;
+      }
+      catch (Exception e)
+      {
+        MessagePresenter.ShowError(e.Message);
+        return false;
+      }
+      finally
+      {
+        MessagePresenter.UpdateProgress(0, "Idle");
+      }
     }
   }
 }

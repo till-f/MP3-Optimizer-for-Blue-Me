@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -32,12 +33,7 @@ namespace BlueAndMeManager.ViewModel
       Name = Path.GetFileNameWithoutExtension(fullPath).Trim();
 
       // fake rename (will add spaces to the file name)
-      FullPath = PlaylistUpdater.Rename(fullPath, Name);
-
-      if (!File.Exists(FullPath))
-      {
-        File.Create(FullPath);
-      }
+      FullPath = PlaylistService.CreateOrRename(fullPath, Name);
 
       if (entryPaths == null)
       {
@@ -81,13 +77,19 @@ namespace BlueAndMeManager.ViewModel
 
     public Task SaveAsync()
     {
-      return PlaylistUpdater.SaveAsync(FullPath, EntryPaths);
+      return PlaylistService.SaveAsync(FullPath, EntryPaths);
     }
 
-    public void Delete()
+    public bool Delete()
     {
-      MusicDrive.Playlists.Remove(this);
-      File.Delete(FullPath);
+      var isDelted = PlaylistService.Delete(FullPath);
+
+      if (isDelted)
+      {
+        MusicDrive.Playlists.Remove(this);
+      }
+
+      return isDelted;
     }
 
     public bool Contains(Track track)
@@ -110,7 +112,7 @@ namespace BlueAndMeManager.ViewModel
         return;
       }
 
-      playlist.FullPath = PlaylistUpdater.Rename(playlist.FullPath, (string) e.NewValue);
+      playlist.FullPath = PlaylistService.CreateOrRename(playlist.FullPath, (string) e.NewValue);
     }
 
     public void UpdateTracks(LinkedList<string> newEntryPaths)

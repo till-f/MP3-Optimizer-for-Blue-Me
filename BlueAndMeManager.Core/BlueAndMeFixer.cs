@@ -42,7 +42,7 @@ namespace BlueAndMeManager.Core
 
         foreach (var mp3FilePath in _mp3FilePaths)
         {
-          if (FilesystemHelper.CancelRequested)
+          if (ManagerService.CancelRequested)
           {
             return movedFiles;
           }
@@ -96,14 +96,13 @@ namespace BlueAndMeManager.Core
         }
 
         MessagePresenter.UpdateProgress(-1, "Cleanup folders...");
-        FilesystemHelper.CleanupFolders(_rootPath);
+        ManagerService.CleanupFolders(_rootPath);
 
         return movedFiles;
       }
       catch (Exception e)
       {
-        MessagePresenter.ShowError($"{e.GetType().Name}: Could not convert file '{currentFile}'. {e.Message}");
-
+        MessagePresenter.ShowError($"Could not convert file '{currentFile}': {e.Message}");
         return movedFiles;
       }
       finally

@@ -21,12 +21,12 @@ namespace BlueAndMeManager.View
   /// </summary>
   public partial class MainWindow : Window
   {
-    public static readonly DependencyProperty IsIdleProperty = RegisterProperty(x => x.IsIdle).Default(true).OnChange(OnIsIdleChanged);
+    public static readonly DependencyProperty IsLockedProperty = RegisterProperty(x => x.IsLocked).Default(false).OnChange(OnIsLockedChanged);
 
-    public bool IsIdle
+    public bool IsLocked
     {
-      get => (bool)GetValue(IsIdleProperty);
-      set => SetValue(IsIdleProperty, value);
+      get => (bool)GetValue(IsLockedProperty);
+      set => SetValue(IsLockedProperty, value);
     }
 
     public static readonly DependencyProperty CanCancelProperty = RegisterProperty(x => x.CanCancel).Default(false).OnChange(OnCanCancelChanged);
@@ -66,7 +66,7 @@ namespace BlueAndMeManager.View
 
     private void PlaylistBox_OnDrop(ListBoxItem targetItem, DragEventArgs e)
     {
-      if (!IsIdle)
+      if (IsLocked)
       {
         return;
       }
@@ -112,11 +112,11 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      IsIdle = false;
+      IsLocked = true;
       RegistrySettings.SetLastPath(rootPath);
       MusicDrive = new MusicDrive(rootPath);
       var task = RebuildCacheAsync(rootPath, SkipMissingTracksCheckBox.IsChecked == true, Dispatcher);
-      task.OnCompletion(Dispatcher, () => IsIdle = true);
+      task.OnCompletion(Dispatcher, () => IsLocked = false);
     }
 
     private void FixTagsButton_Click(object sender, RoutedEventArgs e)
@@ -136,7 +136,7 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      IsIdle = false;
+      IsLocked = true;
       CanCancel = true;
       var rootPath = MusicDrive.FullPath;
       var playlists = MusicDrive.CorePlaylists;
@@ -147,23 +147,23 @@ namespace BlueAndMeManager.View
         foreach (var playlist in playlists)
         {
           MessagePresenter.UpdateProgress(-1, $"Updating playlist {playlist.Key}...");
-          PlaylistUpdater.FormatFixerExecuted(playlist.Key, playlist.Value, fixerTask.Result);
+          PlaylistService.FormatFixerExecuted(playlist.Key, playlist.Value, fixerTask.Result);
         }
 
         var rebuildTask = RebuildCacheAsync(rootPath, false, Dispatcher);
-        rebuildTask.OnCompletion(Dispatcher, () => IsIdle = true);
+        rebuildTask.OnCompletion(Dispatcher, () => IsLocked = false);
       });
     }
 
     private void CancelWork_Clicked(object sender, RoutedEventArgs e)
     {
-      FilesystemHelper.CancelRequested = true;
+      ManagerService.CancelRequested = true;
       CanCancel = false;
     }
 
     private Task RebuildCacheAsync(string rootPath, bool skipMissingTracks, Dispatcher dispatcher)
     {
-      var task = FilesystemHelper.BuildCacheAsync(rootPath, skipMissingTracks);
+      var task = ManagerService.BuildCacheAsync(rootPath, skipMissingTracks);
       return task.OnCompletion(dispatcher, () =>
       {
         if (task.Result != null)
@@ -222,7 +222,7 @@ namespace BlueAndMeManager.View
 
     private void FoldersOrTracksBox_KeyDown(object sender, KeyEventArgs e)
     {
-      if (!IsIdle)
+      if (IsLocked)
       {
         return;
       }
@@ -260,7 +260,7 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      var fullPath = PlaylistUpdater.GetFullPath(MusicDrive.FullPath, dialog.Value.RemoveInvalidFileNameChars());
+      var fullPath = PlaylistService.GetFullPath(MusicDrive.FullPath, dialog.Value.RemoveInvalidFileNameChars());
       var newPlaylist = new Playlist(MusicDrive, fullPath);
       MusicDrive.Playlists.Add(newPlaylist);
       PlaylistsBox.SelectedItem = newPlaylist;
@@ -276,13 +276,16 @@ namespace BlueAndMeManager.View
 
       var playlistIndex = PlaylistsBox.SelectedIndex;
 
-      playlist.Delete();
+      var isDeleted = playlist.Delete();
+      if (!isDeleted)
+      {
+        return;
+      }
 
       if (playlistIndex >= PlaylistsBox.Items.Count)
       {
         playlistIndex--;
       }
-
       PlaylistsBox.SelectedIndex = playlistIndex;
     }
 
@@ -372,7 +375,7 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      IsIdle = false;
+      IsLocked = true;
       CanCancel = true;
 
       foreach (var playlist in MusicDrive.Playlists)
@@ -381,21 +384,21 @@ namespace BlueAndMeManager.View
       }
 
       var rootPath = MusicDrive.FullPath;
-      var task = FilesystemHelper.DeleteFilesAsync(rootPath, MusicDrive.TrackPathsInScope.ToList());
+      var task = ManagerService.DeleteFilesAsync(rootPath, MusicDrive.TrackPathsInScope.ToList());
       task.OnCompletion(() =>
       {
         var rebuildTask = RebuildCacheAsync(rootPath, false, Dispatcher);
-        rebuildTask.OnCompletion(Dispatcher, () => IsIdle = true);
+        rebuildTask.OnCompletion(Dispatcher, () => IsLocked = false);
       });
     }
 
-    private static void OnIsIdleChanged(MainWindow window, DependencyPropertyChangedEventArgs e)
+    private static void OnIsLockedChanged(MainWindow window, DependencyPropertyChangedEventArgs e)
     {
       if ((bool)e.NewValue)
       {
         window.CanCancel = false;
       }
-      FilesystemHelper.CancelRequested = false;
+      ManagerService.CancelRequested = false;
 
       window.CoerceValue(CancelButtonVisibilityProperty);
     }
@@ -407,12 +410,7 @@ namespace BlueAndMeManager.View
 
     private static Visibility CoerceCancelButtonVisibility(MainWindow window, Visibility value)
     {
-      if (window.IsIdle || !window.CanCancel)
-      {
-        return Visibility.Collapsed;
-      }
-
-      return Visibility.Visible;
+      return window.IsLocked ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void OnProgress(double percent, string message)

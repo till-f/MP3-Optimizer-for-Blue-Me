@@ -13,7 +13,7 @@ namespace BlueAndMeManager.Core
     public Dictionary<string, LinkedList<string>> PlaylistCache { get; } = new();
   }
 
-  public class FilesystemHelper
+  public class ManagerService
   {
     public static bool CancelRequested { get; set; }
 
@@ -39,7 +39,7 @@ namespace BlueAndMeManager.Core
           MessagePresenter.UpdateProgress(-1, "Reading playlists...");
           foreach (var playlist in Directory.GetFiles(rootPath, "*.m3u", SearchOption.TopDirectoryOnly))
           {
-            cache.PlaylistCache[playlist] = PlaylistUpdater.ReadM3U(rootPath, playlist, skipMissingTracks);
+            cache.PlaylistCache[playlist] = PlaylistService.ReadM3U(rootPath, playlist, skipMissingTracks);
           }
 
           return cache;

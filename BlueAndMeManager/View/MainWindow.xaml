@@ -16,12 +16,13 @@
         Height="600"
         >
     <Window.Resources>
+        <extConv:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         <viewModelConv:PlaylistContainmentStateToForegroundConverter x:Key="PlaylistContainmentStateToForegroundConverter"/>
         <viewModelConv:PlaylistContainmentStateToFontWeightConverter x:Key="PlaylistContainmentStateToFontWeightConverter"/>
         <extConv:ObjectRefToBooleanConverter x:Key="ObjectRefToBooleanConverter"/>
     </Window.Resources>
     <DockPanel>
-        <Grid DockPanel.Dock="Top" Margin="5" IsEnabled="{Binding ElementName=Window, Path=IsIdle}">
+        <Grid DockPanel.Dock="Top" Margin="5" IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBooleanConverter}, ElementName=Window}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -72,6 +73,7 @@
                 </StackPanel>
                 <Button Grid.Column="1" Margin="2" Padding="5, 0" 
                         Visibility="{Binding CancelButtonVisibility, ElementName=Window}" 
+                        IsEnabled="{Binding CanCancel, ElementName=Window}" 
                         Content="Cancel"
                         IsCancel="True"
                         Click="CancelWork_Clicked"
@@ -93,7 +95,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Column="0" Grid.Row="1" Margin="0, 0, 5, 0" IsEnabled="{Binding ElementName=Window, Path=IsIdle}">
+                <StackPanel Grid.Column="0" Grid.Row="1" Margin="0, 0, 5, 0"  IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBooleanConverter}, ElementName=Window}">
                     <Button Content="✚"
                             Margin="0,0, 0, 5"
                             Padding="5,2"
@@ -142,7 +144,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Column="0" Grid.Row="1" Margin="5, 0" IsEnabled="{Binding ElementName=Window, Path=IsIdle}">
+                <StackPanel Grid.Column="0" Grid.Row="1" Margin="5, 0"  IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBooleanConverter}, ElementName=Window}">
                     <Button Content="❮"
                             Name="AddToPlaylistButton"
                             Padding="5,2"
