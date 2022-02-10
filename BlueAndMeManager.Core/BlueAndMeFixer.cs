@@ -42,6 +42,11 @@ namespace BlueAndMeManager.Core
 
         foreach (var mp3FilePath in _mp3FilePaths)
         {
+          if (FilesystemHelper.CancelRequested)
+          {
+            return movedFiles;
+          }
+
           currentFile = mp3FilePath;
 
           MessagePresenter.UpdateProgress(processedFilesCount++ / allFilesCount * 100, $"Fixing tags of {mp3FilePath}...");

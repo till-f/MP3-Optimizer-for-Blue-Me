@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,12 +6,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 using BlueAndMeManager.Core;
 using BlueAndMeManager.ViewModel;
 using Extensions.Wpf;
 using Extensions.Wpf.Interaction;
+using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.View.MainWindow>;
 
 namespace BlueAndMeManager.View
 {
@@ -21,6 +20,14 @@ namespace BlueAndMeManager.View
   /// </summary>
   public partial class MainWindow : Window
   {
+    public static readonly DependencyProperty IsIdleProperty = RegisterProperty(x => x.IsIdle).Default(true).OnChange(OnIsIdleChanged);
+
+    public bool IsIdle
+    {
+      get => (bool)GetValue(IsIdleProperty);
+      set => SetValue(IsIdleProperty, value);
+    }
+
     public MusicDrive MusicDrive
     {
       get => DataContext as MusicDrive;
@@ -42,6 +49,11 @@ namespace BlueAndMeManager.View
 
     private void PlaylistBox_OnDrop(ListBoxItem targetItem, DragEventArgs e)
     {
+      if (!IsIdle)
+      {
+        return;
+      }
+
       var playlist = (Playlist)targetItem.DataContext;
 
       if (!targetItem.IsSelected)
@@ -83,9 +95,11 @@ namespace BlueAndMeManager.View
         return;
       }
 
+      IsIdle = false;
       RegistrySettings.SetLastPath(rootPath);
       MusicDrive = new MusicDrive(rootPath);
-      RebuildCacheAsync(rootPath, SkipMissingTracksCheckBox.IsChecked == true, Dispatcher);
+      var task = RebuildCacheAsync(rootPath, SkipMissingTracksCheckBox.IsChecked == true, Dispatcher);
+      task.OnCompletion(Dispatcher, () => IsIdle = true);
     }
 
     private void FixTagsButton_Click(object sender, RoutedEventArgs e)
@@ -105,26 +119,33 @@ namespace BlueAndMeManager.View
         return;
       }
 
+      IsIdle = false;
       var rootPath = MusicDrive.FullPath;
       var playlists = MusicDrive.CorePlaylists;
       var fixer = new BlueAndMeFixer(rootPath, MusicDrive.TrackPathsInScope);
-      var task = fixer.RunAsync();
-      task.OnCompletion(() =>
+      var fixerTask = fixer.RunAsync();
+      fixerTask.OnCompletion(() =>
       {
         foreach (var playlist in playlists)
         {
           MessagePresenter.UpdateProgress(-1, $"Updating playlist {playlist.Key}...");
-          PlaylistUpdater.FormatFixerExecuted(playlist.Key, playlist.Value, task.Result);
+          PlaylistUpdater.FormatFixerExecuted(playlist.Key, playlist.Value, fixerTask.Result);
         }
 
-        RebuildCacheAsync(rootPath, false, Dispatcher);
+        var rebuildTask = RebuildCacheAsync(rootPath, false, Dispatcher);
+        rebuildTask.OnCompletion(Dispatcher, () => IsIdle = true);
       });
     }
 
-    private void RebuildCacheAsync(string rootPath, bool skipMissingTracks, Dispatcher dispatcher)
+    private void CancelWork_Clicked(object sender, RoutedEventArgs e)
+    {
+      FilesystemHelper.CancelRequested = true;
+    }
+
+    private Task RebuildCacheAsync(string rootPath, bool skipMissingTracks, Dispatcher dispatcher)
     {
       var task = FilesystemHelper.BuildCacheAsync(rootPath, skipMissingTracks);
-      task.OnCompletion(dispatcher, () =>
+      return task.OnCompletion(dispatcher, () =>
       {
         if (task.Result != null)
         {
@@ -182,6 +203,11 @@ namespace BlueAndMeManager.View
 
     private void FoldersOrTracksBox_KeyDown(object sender, KeyEventArgs e)
     {
+      if (!IsIdle)
+      {
+        return;
+      }
+
       if (e.Key == Key.Return)
       {
         MusicDrive.AddTracksInScopeToPlaylist();
@@ -327,6 +353,8 @@ namespace BlueAndMeManager.View
         return;
       }
 
+      IsIdle = false;
+
       foreach (var playlist in MusicDrive.Playlists)
       {
         playlist.RemoveTracks(MusicDrive.TrackPathsInScope);
@@ -334,7 +362,17 @@ namespace BlueAndMeManager.View
 
       var rootPath = MusicDrive.FullPath;
       var task = FilesystemHelper.DeleteFilesAsync(rootPath, MusicDrive.TrackPathsInScope.ToList());
-      task.OnCompletion(() => RebuildCacheAsync(rootPath, false, Dispatcher));
+      task.OnCompletion(() =>
+      {
+        var rebuildTask = RebuildCacheAsync(rootPath, false, Dispatcher);
+        rebuildTask.OnCompletion(Dispatcher, () => IsIdle = true);
+      });
+    }
+
+    private static void OnIsIdleChanged(MainWindow sender, DependencyPropertyChangedEventArgs e)
+    {
+      // always reset CancelRequested when work is started or finished
+      FilesystemHelper.CancelRequested = false;
     }
 
     private void OnProgress(double percent, string message)

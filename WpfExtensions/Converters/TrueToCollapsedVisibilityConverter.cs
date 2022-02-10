@@ -4,17 +4,17 @@ using System.Windows.Data;
 
 namespace Extensions.Wpf.Converters
 {
-  [ValueConversion(typeof(object), typeof(FontWeight))]
-  public class BooleanToBoldConverter : IValueConverter
+  [ValueConversion(typeof(object), typeof(Visibility))]
+  public class TrueToCollapsedVisibilityConverter : IValueConverter
   {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
-      if (targetType != typeof(FontWeight))
+      if (targetType != typeof(Visibility))
       {
-        throw new InvalidOperationException("The target must be Boolean");
+        throw new InvalidOperationException("The target must be Visibility");
       }
 
-      return (bool)value! ? FontWeights.Bold : FontWeights.Normal;
+      return value != null && (bool)value ? Visibility.Collapsed : Visibility.Visible;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

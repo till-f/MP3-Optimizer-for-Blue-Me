@@ -8,22 +8,28 @@ namespace Extensions.Wpf
 {
   public static class Extensions
   {
-    public static void OnCompletion(this Task t, Dispatcher dispatcher, Action action)
+    public static Task OnCompletion(this Task t, Dispatcher dispatcher, Action action)
     {
-      new Task(() =>
+      var task = new Task(() =>
       {
         t.Wait();
         dispatcher.Invoke(action);
-      }).Start();
+      });
+        
+      task.Start();
+      return task;
     }
 
-    public static void OnCompletion(this Task t, Action action)
+    public static Task OnCompletion(this Task t, Action action)
     {
-      new Task(() =>
+      var task = new Task(() =>
       {
         t.Wait();
         action.Invoke();
-      }).Start();
+      });
+      
+      task.Start();
+      return task;
     }
 
     public static T FindVisualChild<T>(this DependencyObject obj) where T : DependencyObject

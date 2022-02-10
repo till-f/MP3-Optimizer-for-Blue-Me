@@ -15,6 +15,8 @@ namespace BlueAndMeManager.Core
 
   public class FilesystemHelper
   {
+    public static bool CancelRequested { get; set; }
+
     public static Task<FilesystemCache> BuildCacheAsync(string rootPath, bool skipMissingTracks)
     {
       var task = new Task<FilesystemCache>(() =>
@@ -68,6 +70,11 @@ namespace BlueAndMeManager.Core
 
           foreach (var trackPath in trackPaths)
           {
+            if (CancelRequested)
+            {
+              return;
+            }
+
             MessagePresenter.UpdateProgress(ctr++ / trackPaths.Length * 100, $"Deleting {trackPath}...");
             File.Delete(trackPath);
           }
