@@ -13,6 +13,11 @@ namespace Extensions.Wpf.Converters
         throw new InvalidOperationException("The target must be Boolean");
       }
 
+      if (value is string s)
+      {
+        return !string.IsNullOrWhiteSpace(s);
+      }
+
       return value != null;
     }
 

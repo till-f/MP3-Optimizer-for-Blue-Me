@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,6 +11,7 @@ using BlueAndMeManager.Core;
 using BlueAndMeManager.ViewModel;
 using Extensions.Wpf;
 using Extensions.Wpf.Interaction;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.View.MainWindow>;
 
 namespace BlueAndMeManager.View
@@ -100,6 +100,25 @@ namespace BlueAndMeManager.View
 
       playlist.AddTracks(trackPaths);
       PlaylistsBox.SelectedItem = playlist;
+    }
+
+    private void SelectFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+      var startPath = WorkingPath.Text;
+
+      var dialog = new CommonOpenFileDialog()
+      {
+        InitialDirectory = startPath,
+        IsFolderPicker = true
+      };
+
+      var result = dialog.ShowDialog();
+      if (result != CommonFileDialogResult.Ok)
+      {
+        return;
+      }
+
+      WorkingPath.Text = dialog.FileName;
     }
 
     private void OpenButton_Click(object sender, RoutedEventArgs e)

@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BlueAndMeManager.Core\BlueAndMeManager.Core.csproj" />
     <ProjectReference Include="..\WpfExtensions\Extensions.Wpf.csproj" />
   </ItemGroup>
