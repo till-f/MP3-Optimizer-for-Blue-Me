@@ -17,15 +17,15 @@
         <extConv:ObjectRefToCollapsedVisibilityConverter x:Key="ObjectRefToCollapsedVisibilityConverter"/>
     </Window.Resources>
     <StackPanel>
-        <Label Content="{Binding Message, ElementName=Window}" Margin="10, 10, 10, 5" />
+        <TextBlock TextWrapping="Wrap" Text="{Binding Message, ElementName=Window}" Margin="10, 10, 10, 5" />
         <Grid Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" 
-                   Content="{Binding Query, ElementName=Window}" 
-                   Visibility="{Binding Query, Converter={StaticResource ObjectRefToCollapsedVisibilityConverter}, ElementName=Window}"  />
+                       Content="{Binding Query, ElementName=Window}"
+                       Visibility="{Binding Query, Converter={StaticResource ObjectRefToCollapsedVisibilityConverter}, ElementName=Window}"  />
             <TextBox Name = "ValueTextBox"
                      Grid.Column="1" 
                      TabIndex="0"

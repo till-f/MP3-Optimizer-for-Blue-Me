@@ -266,8 +266,9 @@ namespace BlueAndMeManager.View
 
     private void AddPlaylistButton_Click(object sender, RoutedEventArgs e)
     {
-      var dialog = new PromptDialog("This will create a new playlist. Please choose a short name for the playlist.",
-        "Playlist name: ", "New Playlist")
+      var dialog = new PromptDialog(
+        "The available space for the playlist name is limited in most Blue&Me head units, so it is recommended to use a short name for the playlist (about 12 characters max).",
+        "Name: ", "New Playlist")
       {
         Owner = this
       };
@@ -316,8 +317,8 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      var dialog = new PromptDialog("Please choose a short name for the playlist.",
-        "Playlist name: ", "New Playlist", playlist.Name)
+      var dialog = new PromptDialog("The available space for the playlist name is limited in most Blue&Me head units, so it is recommended to use a short name for the playlist (about 12 characters max).",
+        "New name: ", "Rename Playlist", playlist.Name)
       {
         Owner = this
       };
