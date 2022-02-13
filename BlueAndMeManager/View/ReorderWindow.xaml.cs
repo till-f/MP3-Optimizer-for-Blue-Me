@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using BlueAndMeManager.ViewModel;
@@ -22,9 +23,9 @@ namespace BlueAndMeManager.View
 
       _playlist = playlist;
 
-      foreach (var entryPath in _playlist.EntryPaths)
+      foreach (var track in _playlist.Tracks)
       {
-        PlaylistEntries.Add(new PlaylistEntry(entryPath));
+        PlaylistEntries.Add(new PlaylistEntry(track));
       }
 
       new ListBoxDragDropBehavior(PlaylistsBox)
@@ -79,13 +80,10 @@ namespace BlueAndMeManager.View
 
     private void Ok_Click(object sender, RoutedEventArgs e)
     {
-      _playlist.EntryPaths.Clear();
+      _playlist.Clear();
 
-      foreach (var entry in PlaylistEntries)
-      {
-        _playlist.EntryPaths.Add(entry.RelativePath);
-      }
-
+      _playlist.AddTracks(PlaylistEntries.Select(x => x.Track));
+      
       _playlist.SaveAsync();
 
       DialogResult = true;

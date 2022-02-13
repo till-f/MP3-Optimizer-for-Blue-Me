@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BlueAndMeManager.Core\BlueAndMeManager.Core.csproj" />
+    <ProjectReference Include="..\Extensions.Core\Extensions.Core.csproj" />
     <ProjectReference Include="..\WpfExtensions\Extensions.Wpf.csproj" />
   </ItemGroup>
 

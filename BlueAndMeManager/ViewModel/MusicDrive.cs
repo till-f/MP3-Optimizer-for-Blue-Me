@@ -31,6 +31,8 @@ namespace BlueAndMeManager.ViewModel
 
     public ObservableCollection<Track> SelectedTracks { get; } = new();
 
+    public Dictionary<string, Track> TrackByFullPath { get; } = new Dictionary<string, Track>();
+
     public Dictionary<string, IEnumerable<string>> CorePlaylists
     {
       get
@@ -38,28 +40,28 @@ namespace BlueAndMeManager.ViewModel
         var playlists = new Dictionary<string, IEnumerable<string>>();
         foreach (var playlist in Playlists)
         {
-          playlists[playlist.FullPath] = playlist.EntryPaths;
+          playlists[playlist.FullPath] = playlist.Tracks.Select(x => x.RelativePath);
         }
 
         return playlists;
       }
     }
 
-    public IEnumerable<string> TrackPathsInScope
+    public IEnumerable<Track> TracksInScope
     {
       get
       {
         if (SelectedTracks?.Count > 0)
         {
-          return SelectedTracks.Select(x => x.FullPath);
+          return SelectedTracks;
         }
         else if (TracksInSelectedFolders?.Count > 0)
         {
-          return TracksInSelectedFolders.Select(x => x.FullPath);
+          return TracksInSelectedFolders;
         }
         else
         {
-          return Directory.GetFiles(FullPath, "*.mp3", SearchOption.AllDirectories);
+          return Directory.GetFiles(FullPath, "*.mp3", SearchOption.AllDirectories).Select(x => TrackByFullPath[x]);
         }
       }
     }
@@ -89,21 +91,27 @@ namespace BlueAndMeManager.ViewModel
     
     public void AddTracksInScopeToPlaylist()
     {
-      SelectedPlaylist?.AddTracks(TrackPathsInScope);
+      SelectedPlaylist?.AddTracks(TracksInScope);
     }
 
     public void RemoveTracksInScopeFromPlaylist()
     {
-      SelectedPlaylist?.RemoveTracks(TrackPathsInScope);
+      SelectedPlaylist?.RemoveTracks(TracksInScope);
     }
 
-    public void UpdatePlaylistContainmentStates()
+    public void UpdatePlaylistContainmentStates(bool includeTracks)
     {
-      UpdatePlaylistContainmentStates(SelectedPlaylist);
+      foreach (var musicFolder in MusicFolders)
+      {
+        musicFolder.UpdatePlaylistContainmentState(includeTracks);
+      }
     }
 
     public void UpdateFromCache(FilesystemCache filesystemCache)
     {
+      // remove all cached track paths, will be filled from MusicFolder.UpdateTracks()
+      TrackByFullPath.Clear();
+
       // remove deleted folders
       MusicFolders.RemoveWhere(x => !filesystemCache.MusicCache.ContainsKey(x.FullPath));
 
@@ -134,15 +142,16 @@ namespace BlueAndMeManager.ViewModel
       {
         var playlist = Playlists.FirstOrDefault(x => x.FullPath == kvp.Key);
         bool isNewList = false;
+        var newTracks = kvp.Value.Select(x => TrackByFullPath[Path.Combine(FullPath, x)]);
         if (playlist == null)
         {
-          playlist = new Playlist(this, kvp.Key, kvp.Value);
+          playlist = new Playlist(this, kvp.Key, newTracks);
           Playlists.Insert(lastIdx, playlist);
         }
         else
         {
           isNewList = true;
-          playlist.UpdateTracks(kvp.Value);
+          playlist.UpdateTracks(newTracks);
         }
 
         if (isNewList)
@@ -156,20 +165,12 @@ namespace BlueAndMeManager.ViewModel
 
       RefreshTracks();
 
-      UpdatePlaylistContainmentStates(SelectedPlaylist);
-    }
-
-    private void UpdatePlaylistContainmentStates(Playlist playlist)
-    {
-      foreach (var musicFolder in MusicFolders)
-      {
-        musicFolder.UpdatePlaylistContainmentState(playlist);
-      }
+      UpdatePlaylistContainmentStates(true);
     }
 
     private static void OnSelectedPlaylistChanged(MusicDrive musicDrive, DependencyPropertyChangedEventArgs e)
     {
-      musicDrive.UpdatePlaylistContainmentStates(e.NewValue as Playlist);
+      musicDrive.UpdatePlaylistContainmentStates(true);
     }
    
   }

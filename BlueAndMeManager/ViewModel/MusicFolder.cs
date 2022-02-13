@@ -14,7 +14,7 @@ namespace BlueAndMeManager.ViewModel
     CompletelyContained
   }
 
-  public class MusicFolder : DependencyObject, IPlaylistItem, ITracksContainer
+  public class MusicFolder : DependencyObject, ITracksContainer
   {
     private readonly List<Track> _tracks = new ();
 
@@ -41,17 +41,22 @@ namespace BlueAndMeManager.ViewModel
       {
         var track = new Track(this, trackPath);
         _tracks.Add(track);
+
+        MusicDrive.TrackByFullPath[trackPath] = track;
       }
     }
 
-    public void UpdatePlaylistContainmentState(Playlist playlist)
+    public void UpdatePlaylistContainmentState(bool includeTracks)
     {
       var isFolderContained = false;
       var areAllTracksContained = true;
 
       foreach (var track in Tracks)
       {
-        track.UpdatePlaylistContainmentState(playlist);
+        if (includeTracks)
+        {
+          track.UpdatePlaylistContainmentState();
+        }
 
         if (track.PlaylistContainmentState == EPlaylistContainmentState.CompletelyContained)
         {
@@ -95,6 +100,7 @@ namespace BlueAndMeManager.ViewModel
           track = new Track(this, newTrackPath);
           _tracks.Insert(lastIdx, track);
         }
+        MusicDrive.TrackByFullPath[newTrackPath] = track;
 
         lastIdx++;
       }

@@ -6,7 +6,7 @@ namespace BlueAndMeManager.ViewModel
 {
   public class PlaylistEntry : DependencyObject
   {
-    public string RelativePath { get; }
+    public Track Track { get; }
 
     public static readonly DependencyProperty IsSelectedProperty = RegisterProperty(x => x.IsSelected);
 
@@ -16,14 +16,14 @@ namespace BlueAndMeManager.ViewModel
       set => SetValue(IsSelectedProperty, value);
     }
 
-    public PlaylistEntry(string relativePath)
+    public PlaylistEntry(Track track)
     {
-      RelativePath = relativePath;
+      Track = track;
     }
 
     public override string ToString()
     {
-      return RelativePath;
+      return Track.RelativePath;
     }
   }
 }

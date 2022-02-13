@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using BlueAndMeManager.Core;
@@ -13,11 +14,13 @@ namespace BlueAndMeManager.ViewModel
 {
   public class Playlist : DependencyObject
   {
+    private readonly HashSet<Track> _tracks = new HashSet<Track>();
+
     public MusicDrive MusicDrive { get; }
 
     public string FullPath { get; private set; }
 
-    public ObservableCollection<string> EntryPaths { get; } = new ();
+    public ObservableCollection<Track> Tracks { get; } = new ();
 
     public static readonly DependencyProperty NameProperty = RegisterProperty(x => x.Name).OnChange(OnNameChanged);
 
@@ -27,7 +30,7 @@ namespace BlueAndMeManager.ViewModel
       set => SetValue(NameProperty, value);
     }
     
-    public Playlist(MusicDrive musicDrive, string fullPath, IEnumerable<string> entryPaths = null)
+    public Playlist(MusicDrive musicDrive, string fullPath, IEnumerable<Track> tracks = null)
     {
       MusicDrive = musicDrive;
       Name = Path.GetFileNameWithoutExtension(fullPath).Trim();
@@ -35,49 +38,58 @@ namespace BlueAndMeManager.ViewModel
       // fake rename (will add spaces to the file name)
       FullPath = PlaylistService.CreateOrRename(fullPath, Name);
 
-      if (entryPaths == null)
+      if (tracks == null)
       {
         return;
       }
 
-      foreach (var entryPath in entryPaths)
+      foreach (var track in tracks)
       {
-        EntryPaths.Add(entryPath);
+        _tracks.Add(track);
+        Tracks.Add(track);
       }
     }
 
-    public void AddTracks(IEnumerable<string> trackPaths)
+    public void Clear()
     {
-      foreach (var trackPath in trackPaths)
+      Tracks.Clear();
+      _tracks.Clear();
+    }
+
+    public void AddTracks(IEnumerable<Track> tracks)
+    {
+      foreach (var track in tracks)
       {
-        var relativePath = Utilities.GetRelativePath(MusicDrive.FullPath, trackPath);
-        if (!EntryPaths.Contains(relativePath))
+        if (!_tracks.Contains(track))
         {
-          EntryPaths.Add(relativePath);
+          _tracks.Add(track);
+          Tracks.Add(track);
+          track.UpdatePlaylistContainmentState();
         }
       }
 
-      MusicDrive.UpdatePlaylistContainmentStates();
+      MusicDrive.UpdatePlaylistContainmentStates(false);
 
       SaveAsync();
     }
 
-    public void RemoveTracks(IEnumerable<string> trackPaths)
+    public void RemoveTracks(IEnumerable<Track> tracks)
     {
-      foreach (var trackPath in trackPaths)
+      foreach (var track in tracks)
       {
-        var relativePath = Utilities.GetRelativePath(MusicDrive.FullPath, trackPath);
-        EntryPaths.Remove(relativePath);
+        _tracks.Remove(track);
+        Tracks.Remove(track);
+        track.UpdatePlaylistContainmentState();
       }
 
-      MusicDrive.UpdatePlaylistContainmentStates();
+      MusicDrive.UpdatePlaylistContainmentStates(false);
 
       SaveAsync();
     }
 
     public Task SaveAsync()
     {
-      return PlaylistService.SaveAsync(FullPath, EntryPaths);
+      return PlaylistService.SaveAsync(FullPath, Tracks.Select(x => x.RelativePath));
     }
 
     public bool Delete()
@@ -94,15 +106,7 @@ namespace BlueAndMeManager.ViewModel
 
     public bool Contains(Track track)
     {
-      foreach (var entryPath in EntryPaths)
-      {
-        if (track.FullPath.EndsWith(entryPath))
-        {
-          return true;
-        }
-      }
-
-      return false;
+      return _tracks.Contains(track);
     }
 
     private static void OnNameChanged(Playlist playlist, DependencyPropertyChangedEventArgs e)
@@ -115,16 +119,18 @@ namespace BlueAndMeManager.ViewModel
       playlist.FullPath = PlaylistService.CreateOrRename(playlist.FullPath, (string) e.NewValue);
     }
 
-    public void UpdateTracks(LinkedList<string> newEntryPaths)
+    public void UpdateTracks(IEnumerable<Track> newTracks)
     {
-      EntryPaths.RemoveWhere(x => !newEntryPaths.Contains(x));
+      _tracks.RemoveWhere(x => !newTracks.Contains(x));
+      Tracks.RemoveWhere(x => !newTracks.Contains(x));
 
       var lastIdx = 0;
-      foreach (var newEntryPath in newEntryPaths)
+      foreach (var newTrack in newTracks)
       {
-        if (!EntryPaths.Contains(newEntryPath))
+        if (!_tracks.Contains(newTrack))
         {
-          EntryPaths.Insert(lastIdx, newEntryPath);
+          _tracks.Add(newTrack);
+          Tracks.Insert(lastIdx, newTrack);
         }
         lastIdx++;
       }

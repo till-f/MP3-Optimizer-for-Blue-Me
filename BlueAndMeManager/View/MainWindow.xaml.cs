@@ -91,14 +91,14 @@ namespace BlueAndMeManager.View
       var sourceItem = (ListBoxItem)e.Data.GetData(typeof(ListBoxItem));
       var listBox = sourceItem.FindVisualParent<ListBox>();
 
-      List<string> trackPaths = new();
+      List<Track> tracks = new();
 
       foreach (var trackContainer in listBox.SelectedItems)
       {
-        trackPaths.AddRange(((ITracksContainer)trackContainer).Tracks.Select(x => x.FullPath));
+        tracks.AddRange(((ITracksContainer)trackContainer).Tracks);
       }
 
-      playlist.AddTracks(trackPaths);
+      playlist.AddTracks(tracks);
       PlaylistsBox.SelectedItem = playlist;
     }
 
@@ -147,7 +147,7 @@ namespace BlueAndMeManager.View
       }
 
       var result =MessageBox.Show(this,
-        $"CAUTION! This will overwrite the meta information (ID3 tags) of the {MusicDrive.TrackPathsInScope.Count()} selected files. Information may be removed or altered to fulfill Blue&Me restrictions!\n\nYour files might be renamed, but the loaded playlists will be updated accordingly.\n\nDo you want to continue?",
+        $"CAUTION! This will overwrite the meta information (ID3 tags) of the {MusicDrive.TracksInScope.Count()} selected files. Information may be removed or altered to fulfill Blue&Me restrictions!\n\nYour files might be renamed, but the loaded playlists will be updated accordingly.\n\nDo you want to continue?",
         "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 
       if (result != MessageBoxResult.Yes)
@@ -159,7 +159,7 @@ namespace BlueAndMeManager.View
       CanCancel = true;
       var rootPath = MusicDrive.FullPath;
       var playlists = MusicDrive.CorePlaylists;
-      var fixer = new BlueAndMeFixer(rootPath, MusicDrive.TrackPathsInScope);
+      var fixer = new BlueAndMeFixer(rootPath, MusicDrive.TracksInScope.Select(x => x.FullPath));
       var fixerTask = fixer.RunAsync();
       fixerTask.OnCompletion(() =>
       {
@@ -384,7 +384,7 @@ namespace BlueAndMeManager.View
       }
 
       var result = MessageBox.Show(this,
-        $"Do you really want to delete the selected {MusicDrive.TrackPathsInScope.Count()} files?",
+        $"Do you really want to delete the selected {MusicDrive.TracksInScope.Count()} files?",
         "Delete Tracks",
         MessageBoxButton.YesNo,
         MessageBoxImage.Warning,
@@ -400,11 +400,11 @@ namespace BlueAndMeManager.View
 
       foreach (var playlist in MusicDrive.Playlists)
       {
-        playlist.RemoveTracks(MusicDrive.TrackPathsInScope);
+        playlist.RemoveTracks(MusicDrive.TracksInScope);
       }
 
       var rootPath = MusicDrive.FullPath;
-      var task = ManagerService.DeleteFilesAsync(rootPath, MusicDrive.TrackPathsInScope.ToList());
+      var task = ManagerService.DeleteFilesAsync(rootPath, MusicDrive.TracksInScope.Select(x => x.FullPath).ToList());
       task.OnCompletion(() =>
       {
         var rebuildTask = RebuildCacheAsync(rootPath, false, Dispatcher);
