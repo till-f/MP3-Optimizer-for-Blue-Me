@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>Full</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,13 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="taglib-sharp">
-      <HintPath>..\lib\taglib-sharp.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageReference Include="TagLibSharp" Version="2.2.0" />
   </ItemGroup>
 
 </Project>

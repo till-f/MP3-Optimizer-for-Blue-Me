@@ -119,6 +119,8 @@ namespace BlueAndMeManager.View
       }
 
       WorkingPath.Text = dialog.FileName;
+
+      OpenButton_Click(sender, e);
     }
 
     private void OpenButton_Click(object sender, RoutedEventArgs e)

@@ -10,7 +10,7 @@
         d:DataContext="{d:DesignInstance viewModel:MusicDrive}"
         d:DesignWidth="600"
         d:DesignHeight="450"
-        Title="Blue&amp;Me Playlist Manager" 
+        Title="MP3 Optimizer and Playlist Manager for Blue&amp;Me" 
         Name="Window"
         Width="1200" 
         Height="600"

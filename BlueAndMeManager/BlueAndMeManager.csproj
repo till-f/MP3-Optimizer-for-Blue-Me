@@ -4,6 +4,17 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <BaseOutputPath>..\_bin</BaseOutputPath>
+    <DebugType>none</DebugType>
+    <Version>1.0.0.0</Version>
+    <Authors>Till Fischer</Authors>
+    <Company>Open Source</Company>
+    <Product>MP3 Optimizer and Playlist Manager for Blue&amp;Me</Product>
+    <Copyright>(c) Till Fischer</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>Full</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,5 +39,9 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="echo TargetDir: $(TargetDir)&#xD;&#xA;copy $(SolutionDir)\LICENSE.txt $(TargetDir)\&#xD;&#xA;copy $(SolutionDir)\README.md $(TargetDir)\" />
+  </Target>
 
 </Project>
