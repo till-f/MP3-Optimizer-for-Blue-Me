@@ -4,9 +4,11 @@ This software tool is intended to fix (reformat) MP3 files so that they are prop
 
 The tool also supports playlist creation. You can quickly select the desired files and add them to the desired list(s) or remove files from existing lists. You can also reorder the files of a playlist easily.
 
+![Screenshot of Main Window](README_img1.png?raw=true "Screenshot of Main Window")
+
 ## MP3 conversion
 
-1. Copy your mp3 files to the USB stick 
+1. Copy your .mp3 files to the USB stick.
 	- *Note: You can also copy them into an empty folder on your hard drive first.*
 	- *Note: It is recommended to use a flat folder structure (any number of folders in the root directory but no additional subdirectories).*
 	- *Note: If you already have .m3u playlists, you can also place them on the stick. All playlists must be in the root directory. Extended m3u playlists are not supported.*

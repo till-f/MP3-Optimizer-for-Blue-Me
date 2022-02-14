@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="echo TargetDir: $(TargetDir)&#xD;&#xA;copy $(SolutionDir)\LICENSE.txt $(TargetDir)\&#xD;&#xA;copy $(SolutionDir)\README.md $(TargetDir)\" />
+    <Exec Command="copy $(SolutionDir)\LICENSE.txt $(TargetDir)\&#xD;&#xA;copy $(SolutionDir)\README.md $(TargetDir)\&#xD;&#xA;copy $(SolutionDir)\README_img1.png $(TargetDir)\" />
   </Target>
 
 </Project>
