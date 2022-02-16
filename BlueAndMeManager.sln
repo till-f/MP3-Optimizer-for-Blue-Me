@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlueAndMeManager", "BlueAnd
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlueAndMeManager.Core", "BlueAndMeManager.Core\BlueAndMeManager.Core.csproj", "{8B28DBFA-2381-4FFC-B6DB-E8198BD46A8D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.Wpf", "WpfExtensions\Extensions.Wpf.csproj", "{56E2E2F2-714F-4B5E-ACAF-8D89541A5933}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.Wpf", "Extensions.Wpf\Extensions.Wpf.csproj", "{56E2E2F2-714F-4B5E-ACAF-8D89541A5933}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions.Core", "Extensions.Core\Extensions.Core.csproj", "{F77A0644-B10B-4D7A-B590-5845AF2F0EDA}"
 EndProject

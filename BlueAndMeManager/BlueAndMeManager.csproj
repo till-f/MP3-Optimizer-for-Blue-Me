@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <BaseOutputPath>..\_bin</BaseOutputPath>
     <DebugType>none</DebugType>
-    <Version>1.0.0.1</Version>
+    <Version>1.0.0.2</Version>
     <Authors>Till Fischer</Authors>
     <Company>Open Source</Company>
     <Product>MP3 Optimizer and Playlist Manager for Blue&amp;Me</Product>
@@ -24,7 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BlueAndMeManager.Core\BlueAndMeManager.Core.csproj" />
     <ProjectReference Include="..\Extensions.Core\Extensions.Core.csproj" />
-    <ProjectReference Include="..\WpfExtensions\Extensions.Wpf.csproj" />
+    <ProjectReference Include="..\Extensions.Wpf\Extensions.Wpf.csproj" />
   </ItemGroup>
 
   <ItemGroup>
