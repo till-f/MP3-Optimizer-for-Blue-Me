@@ -12,7 +12,14 @@ namespace Extensions.Wpf
     {
       var task = new Task(() =>
       {
-        t.Wait();
+        // we are not doing t.Wait() here because this would silently catch any
+        // exception that caused the task to terminate and any global excepiton
+        // handler would not have a chance to intercept.
+        ((IAsyncResult)t).AsyncWaitHandle.WaitOne();
+        t = null;
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
         dispatcher.Invoke(action);
       });
         
@@ -24,7 +31,14 @@ namespace Extensions.Wpf
     {
       var task = new Task(() =>
       {
-        t.Wait();
+        // we are not doing t.Wait() here because this would silently catch any
+        // exception that caused the task to terminate and any global excepiton
+        // handler would not have a chance to intercept.
+        ((IAsyncResult)t).AsyncWaitHandle.WaitOne();
+        t = null;
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
         action.Invoke();
       });
       

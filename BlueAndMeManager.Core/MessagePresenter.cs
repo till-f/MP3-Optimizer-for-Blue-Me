@@ -1,4 +1,6 @@
-﻿namespace BlueAndMeManager.Core
+﻿using System.Diagnostics;
+
+namespace BlueAndMeManager.Core
 {
   public class MessagePresenter
   {
@@ -18,11 +20,17 @@
 
     public static void ShowError(string message)
     {
+      Debug.Print($"Error: {message}");
       _instance?._onError.Invoke(message);
     }
 
     public static void UpdateProgress(double percent, string message)
     {
+#if DEBUG
+      string percentPrefix = percent >= 0 ? string.Format("{000:0.0}%: ", percent) : string.Empty;
+      Debug.Print(percentPrefix + message);
+#endif
+
       _instance?._onProgress.Invoke(percent, message);
     }
 

@@ -79,7 +79,7 @@ namespace BlueAndMeManager.Core
           throw new Exception($"Error in playlist '{playlistName}':\nExtended M3U not supported.");
         }
 
-        var relativePath = line;
+        var relativePath = line.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
         if (Path.IsPathRooted(relativePath))
         {
           try

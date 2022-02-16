@@ -6,6 +6,13 @@ The tool also supports playlist creation. You can quickly select the desired fil
 
 ![Screenshot of Main Window](README_img1.png?raw=true "Screenshot of Main Window")
 
+## Download
+
+1. Go to the [Releases Page](https://github.com/till-f/MP3-Optimizer-for-Blue-Me/releases) and get the latest version.
+2. Extract the archive.
+3. Run BlueAndMeManager.exe.
+	- *Note: You might be asked to install .NET Core, which is mandatory.*
+
 ## MP3 conversion
 
 1. Copy your .mp3 files to the USB stick.
@@ -27,3 +34,4 @@ The tool also supports playlist creation. You can quickly select the desired fil
 	- *Note: Press `Delete` to remove the selected files from the selected playlist or click on the "Remove Selection from Playlist" button.*
 4. Click on the "Reorder Playlist" button to change the order in which the files should be played.
 	- *Note: Use Drag&Drop to move all selected files up or down.*
+ 

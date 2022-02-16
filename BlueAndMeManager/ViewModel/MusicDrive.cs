@@ -145,12 +145,12 @@ namespace BlueAndMeManager.ViewModel
         var newTracks = kvp.Value.Select(x => TrackByFullPath[Path.Combine(FullPath, x)]);
         if (playlist == null)
         {
+          isNewList = true;
           playlist = new Playlist(this, kvp.Key, newTracks);
           Playlists.Insert(lastIdx, playlist);
         }
         else
         {
-          isNewList = true;
           playlist.UpdateTracks(newTracks);
         }
 

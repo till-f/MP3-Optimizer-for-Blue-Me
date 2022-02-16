@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -56,12 +56,26 @@ namespace BlueAndMeManager.View
       InitializeComponent();
 
       MessagePresenter.Init(OnProgress, OnError);
+      TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
       new ListBoxDragDropBehavior(PlaylistsBox).ApplyDropTargetBehaviorToItems(PlaylistBox_OnDrop);
       new ListBoxDragDropBehavior(FoldersBox).ApplyDragSourceBehaviorToItems();
       new ListBoxDragDropBehavior(TracksBox).ApplyDragSourceBehaviorToItems();
 
       WorkingPath.Text = RegistrySettings.GetLastPath();
+      Title += " v" + GetType().Assembly.GetName().Version.ToString();
+    }
+
+    private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+    {
+      if (e?.Exception?.InnerException is Exception innerExeption)
+      {
+        MessagePresenter.ShowError(innerExeption.Message);
+      }
+      else
+      {
+        MessagePresenter.ShowError(e?.Exception?.Message);
+      }
     }
 
     private void PlaylistBox_OnDrop(ListBoxItem targetItem, DragEventArgs e)
@@ -437,7 +451,6 @@ namespace BlueAndMeManager.View
 
     private void OnProgress(double percent, string message)
     {
-      Debug.Print(message);
       Dispatcher.InvokeAsync(() =>
       {
         StatusBar.Content = message;
@@ -455,7 +468,6 @@ namespace BlueAndMeManager.View
 
     private void OnError(string message)
     {
-      Debug.Print($"Error: {message}");
       Dispatcher.InvokeAsync(() =>
       {
         MessageBox.Show(this, message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
