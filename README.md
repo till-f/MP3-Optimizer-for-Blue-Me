@@ -1,6 +1,6 @@
 # MP3 Optimizer and Playlist Manager for Blue&Me
 
-This software tool is intended to fix (reformat) MP3 files so that they are properly recognized by the Blue&Me unit in cars of Fiat, Alfa Romeo and Lancia. It removes unsupported ID3 tags and replaces special characters by their latinized counterpart (e.g. German "ä" becomes "ae" or cyrillic "Б" becomes "B").
+This tool will fix (reformat) your MP3 files so that they are properly recognized by the Blue&Me unit in cars of Fiat, Alfa Romeo and Lancia. It removes unsupported ID3 tags and replaces special characters by their latinized counterpart (e.g. German "ä" becomes "ae" or cyrillic "Б" becomes "B"). This will fix the common issues that some or all MP3 files on the USB stick are not played.
 
 The tool also supports playlist creation. You can quickly select the desired files and add them to the desired list(s) or remove files from existing lists. You can also reorder the files of a playlist easily.
 
@@ -8,7 +8,7 @@ The tool also supports playlist creation. You can quickly select the desired fil
 
 ## Download
 
-1. Go to the [Releases Page](https://github.com/till-f/MP3-Optimizer-for-Blue-Me/releases) and get the latest version.
+1. Go to the [release page](https://github.com/till-f/MP3-Optimizer-for-Blue-Me/releases) and get the latest version.
 2. Extract the archive.
 3. Run BlueAndMeManager.exe.
 	- *Note: You might be asked to install .NET Core, which is mandatory.*
@@ -20,10 +20,11 @@ The tool also supports playlist creation. You can quickly select the desired fil
 	- *Note: It is recommended to use a flat folder structure (any number of folders in the root directory but no additional subdirectories).*
 	- *Note: If you already have .m3u playlists, you can also place them on the stick. All playlists must be in the root directory. Extended m3u playlists are not supported.*
 2. Start the application and use the "..." button to select your USB stick or temporary folder from step 1. Alternatively, enter the corresponding path into the text field and click "Open/Refresh".
+	- *Note: You may tick "Remove missing tracks from playlists" if you get an error that a playlist could not be loaded due to missing files. The missing files will then be removed from all playlists.*
 3. Start the conversion of all files by pressing "Apply Blue&Me Fixes".
-	- *Note: DO NOT RUN THE CONVERSION ON YOUR ORIGINAL MEDIA LIBRARY! ID3 tags are removed and/or modified and the files may be moved/renamed.*
+	- *Note: DO NOT RUN THIS ON YOUR ORIGINAL MEDIA LIBRARY! ID3 tags are removed and/or modified and the files may be moved/renamed.*
 	- *Note: you can also run the conversion for just a few files by first selecting them in the list below.*
-	- *If playlists exists, they will automatically be adjusted to reflect any moved/renamed files.*
+	- *Note: If playlists exists, they will automatically be adjusted to reflect any moved/renamed files.*
 
 ## Playlist creation
 
