@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Windows;
 using BlueAndMeManager.Core;
 using Extensions.Core.Helpers;
@@ -7,8 +8,11 @@ using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<Blue
 
 namespace BlueAndMeManager.ViewModel
 {
-  public class Track : DependencyObject, ITracksContainer
+  public class Track : DependencyObject, ITracksContainer, IComparable
   {
+    [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
+    private static extern int StrCmpLogicalW(string psz1, string psz2);
+
     public MusicFolder MusicFolder { get; }
 
     public string FullPath { get; }
@@ -62,6 +66,11 @@ namespace BlueAndMeManager.ViewModel
     public override string ToString()
     {
       return $"{TrackNr} - {Artist} - {Title}";
+    }
+
+    public int CompareTo(object obj)
+    {
+      return StrCmpLogicalW(ToString(), obj.ToString());
     }
   }
 }

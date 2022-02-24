@@ -37,7 +37,7 @@ namespace BlueAndMeManager.Core
         {
           MessagePresenter.UpdateProgress(0, "Reading music files...");
 
-          var allFilesCount = Directory.GetFiles(rootPath, "*.mp3", SearchOption.AllDirectories).Length;
+          double allFilesCount = Directory.GetFiles(rootPath, "*.mp3", SearchOption.AllDirectories).Length;
           var processedFilesCount = 0;
 
           foreach (var musicFolder in Directory.GetDirectories(rootPath))
@@ -127,12 +127,25 @@ namespace BlueAndMeManager.Core
 
     public static void CleanupFolders(string rootPath)
     {
+      var errors = false;
       foreach (var directory in Directory.GetDirectories(rootPath, "*", SearchOption.AllDirectories))
       {
         if (Directory.Exists(directory) && Directory.GetFiles(directory, "*.mp3", SearchOption.AllDirectories).Length == 0)
         {
-          Directory.Delete(directory, true);
+          try
+          {
+            Directory.Delete(directory, true);
+          }
+          catch
+          {
+            errors = true;
+          }
         }
+      }
+
+      if (errors)
+      {
+        MessagePresenter.ShowError($"Could not remove obsolete folders. You may have to delete some folders manually.");
       }
     }
   }

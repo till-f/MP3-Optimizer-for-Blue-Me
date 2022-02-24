@@ -23,7 +23,7 @@ namespace BlueAndMeManager.ViewModel
 
     public override string ToString()
     {
-      return Track.RelativePath;
+      return $"{Track.Album} - {Track.TrackNr} - {Track.Artist} - {Track.Title}";
     }
   }
 }

@@ -13,15 +13,19 @@ namespace BlueAndMeManager.Core
 {
   public class BlueAndMeFixer
   {
+    private const string TmpFolderName = "_tmp";
+
     private readonly string _rootPath;
     private readonly string[] _mp3FilePaths;
+    private readonly bool _minimizeFileNames;
 
-    public BlueAndMeFixer(string rootPath, IEnumerable<string> mp3FilePaths)
+    public BlueAndMeFixer(string rootPath, IEnumerable<string> mp3FilePaths, bool minimizeFileNames)
     {
       Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
       _rootPath = rootPath;
       _mp3FilePaths = mp3FilePaths.ToArray();
+      _minimizeFileNames = minimizeFileNames;
     }
 
     public Task<Dictionary<string, string>> RunAsync()
@@ -42,6 +46,10 @@ namespace BlueAndMeManager.Core
         double allFilesCount = _mp3FilePaths.Length;
         var processedFilesCount = 0;
 
+        int folderCounter = 0;
+        uint trackCounter = 0;
+        string lastFolderName = null;
+
         foreach (var mp3FilePath in _mp3FilePaths)
         {
           if (ManagerService.CancelSource != null && ManagerService.CancelSource.IsCancellationRequested)
@@ -51,7 +59,16 @@ namespace BlueAndMeManager.Core
 
           currentFile = mp3FilePath;
 
-          MessagePresenter.UpdateProgress(processedFilesCount++ / allFilesCount * 100, $"Fixing tags of {mp3FilePath}...");
+          MessagePresenter.UpdateProgress(processedFilesCount++ / allFilesCount * 100, $"Processing {mp3FilePath}...");
+
+          var folderName = Directory.GetParent(mp3FilePath).Name;
+          if (folderName != lastFolderName)
+          {
+            lastFolderName = folderName;
+            trackCounter = 0;
+            folderCounter++;
+          }
+          trackCounter++;
 
           var mp3File = TagLib.File.Create(mp3FilePath);
 
@@ -60,6 +77,11 @@ namespace BlueAndMeManager.Core
           var title = SanitizeName(mp3File.Tag.Title, 30);
           var track = mp3File.Tag.Track;
           var genre = mp3File.Tag.FirstGenre;
+
+          if (track == 0)
+          {
+            track = trackCounter;
+          }
 
           mp3File.RemoveTags(TagTypes.AllTags);
 
@@ -78,22 +100,25 @@ namespace BlueAndMeManager.Core
 
           mp3File.Save();
 
-          // ReSharper disable once PossibleNullReferenceException
-          var newFolderName = SanitizeName(Directory.GetParent(mp3FilePath).Name).RemoveInvalidFileNameChars();
-          var newFileName = SanitizeName(Path.GetFileNameWithoutExtension(mp3FilePath)).RemoveInvalidFileNameChars() + ".mp3";
-          var newFolderPath = Path.Combine(_rootPath, newFolderName);
-          var newFilePath = Path.Combine(newFolderPath, newFileName);
-
-          if (mp3FilePath != newFilePath)
+          if (_minimizeFileNames)
           {
-            if (!Directory.Exists(newFolderPath))
+            var newFolderName = folderCounter.ToString("D3");
+            var newFileName = trackCounter.ToString("D3") + ".mp3";
+            var tmpRootPath = Path.Combine(_rootPath, TmpFolderName);
+            var tmpFolderPath = Path.Combine(tmpRootPath, newFolderName);
+            var tmpFilePath = Path.Combine(tmpFolderPath, newFileName);
+
+            if (mp3FilePath != tmpFilePath)
             {
-              Directory.CreateDirectory(newFolderPath);
+              if (!Directory.Exists(tmpFolderPath))
+              {
+                Directory.CreateDirectory(tmpFolderPath);
+              }
+              File.Move(mp3FilePath, tmpFilePath);
+              var oldRelPath = Utilities.GetRelativePath(_rootPath, mp3FilePath);
+              var newRelPath = Utilities.GetRelativePath(tmpRootPath, tmpFilePath);
+              movedFiles.Add(oldRelPath, newRelPath);
             }
-            File.Move(mp3FilePath, newFilePath);
-            var oldRelPath = Utilities.GetRelativePath(_rootPath, mp3FilePath);
-            var newRelPath = Utilities.GetRelativePath(_rootPath, newFilePath);
-            movedFiles.Add(oldRelPath, newRelPath);
           }
         }
 
@@ -109,7 +134,49 @@ namespace BlueAndMeManager.Core
       }
       finally
       {
+        RestoreTemporarilyMovedFilesIfNeeded();
         MessagePresenter.UpdateProgress(0, "Idle");
+      }
+    }
+
+    private void RestoreTemporarilyMovedFilesIfNeeded()
+    {
+      var tmpRootPath = Path.Combine(_rootPath, TmpFolderName);
+      if (!_minimizeFileNames || !Directory.Exists(_rootPath))
+      {
+        return;
+      }
+
+      var errors = false;
+      MessagePresenter.UpdateProgress(-1, "Restore temporarily moved files...");
+      foreach (var oldDirectoryPath in Directory.GetDirectories(tmpRootPath, "*", SearchOption.AllDirectories))
+      {
+        var directoryName = Path.GetFileName(oldDirectoryPath);
+        var newDirectoryPath = Path.Combine(_rootPath, directoryName);
+        try
+        {
+          Directory.Move(oldDirectoryPath, newDirectoryPath);
+        }
+        catch
+        {
+          errors = true;
+        }
+      }
+
+      if (errors)
+      {
+        MessagePresenter.ShowError($"Could not restore all temporarily moved files. Please move remaining files manually from from '{TmpFolderName}'.");
+      }
+      else
+      {
+        try
+        {
+          Directory.Delete(tmpRootPath, true);
+        }
+        catch (Exception ex)
+        {
+          MessagePresenter.ShowError($"Could not delete '{TmpFolderName}' folder: {ex.Message}");
+        }
       }
     }
 

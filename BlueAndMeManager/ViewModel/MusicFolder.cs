@@ -45,6 +45,8 @@ namespace BlueAndMeManager.ViewModel
 
         MusicDrive.TrackByFullPath[coreTrack.FullPath] = track;
       }
+
+      _tracks.Sort();
     }
 
     public void UpdatePlaylistContainmentState(bool includeTracks)
@@ -83,11 +85,6 @@ namespace BlueAndMeManager.ViewModel
       }
     }
 
-    public override string ToString()
-    {
-      return Path.GetFileName(FullPath);
-    }
-
     public void UpdateTracks(LinkedList<FilesystemCache.Track> newCoreTracks)
     {
       _tracks.RemoveWhere(track => !newCoreTracks.Select(coreTrack => coreTrack.FullPath).Contains(track.FullPath));
@@ -113,6 +110,20 @@ namespace BlueAndMeManager.ViewModel
       {
         _tracks.Remove(track);
       }
+    }
+
+    public override string ToString()
+    {
+      if (_tracks.Count > 0)
+      {
+        var firstTrack = _tracks.First();
+        if (!string.IsNullOrWhiteSpace(firstTrack.Album))
+        {
+          return $"{Path.GetFileName(FullPath)} - {firstTrack.Album} ({firstTrack.Artist}, ...)";
+        }
+      }
+
+      return Path.GetFileName(FullPath);
     }
   }
 }

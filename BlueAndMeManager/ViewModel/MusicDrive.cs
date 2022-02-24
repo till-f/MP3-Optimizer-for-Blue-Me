@@ -61,7 +61,12 @@ namespace BlueAndMeManager.ViewModel
         }
         else
         {
-          return Directory.GetFiles(FullPath, "*.mp3", SearchOption.AllDirectories).Select(x => TrackByFullPath[x]);
+          List<Track> tracks = new ();
+          foreach (var folder in MusicFolders)
+          {
+            tracks.AddRange(folder.Tracks);
+          }
+          return tracks;
         }
       }
     }

@@ -66,13 +66,22 @@
                           Name="SkipMissingTracksCheckBox"
                           Margin="0, 5, 10, 5" VerticalAlignment="Center" Content="Remove missing tracks from playlists" />
             </Grid>
-            <Button Grid.Column="2"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Right" 
-                    Padding="10,5" 
-                    Content="Apply Blue&amp;Me Fixes"
-                    IsEnabled="{Binding FullPath, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
-                    Click="FixTagsButton_Click" />
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+              <Button VerticalAlignment="Top"
+                      HorizontalAlignment="Right" 
+                      Padding="10,5" 
+                      Content="Apply Blue&amp;Me Fixes"
+                      IsEnabled="{Binding FullPath, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
+                      Click="FixTagsButton_Click" />
+              <CheckBox Grid.Row="1"
+                        HorizontalAlignment="Right" 
+                        Name="MinimizeFileNamesCheckBox"
+                        Margin="0, 5, 2, 5" VerticalAlignment="Center" Content="Minimize file names" Checked="MinimizeFileNamesCheckBox_Checked" />
+            </Grid>
         </Grid>
         <Grid DockPanel.Dock="Bottom">
             <Grid>
