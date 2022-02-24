@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Windows;
+using BlueAndMeManager.Core;
 using Extensions.Core;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.MusicFolder>;
 
@@ -32,17 +33,17 @@ namespace BlueAndMeManager.ViewModel
       private set => SetValue(EPlaylistContainmentStateProperty, value);
     }
 
-    public MusicFolder(MusicDrive musicDrive, string fullPath, IEnumerable<string> trackPaths)
+    public MusicFolder(MusicDrive musicDrive, string fullPath, IEnumerable<FilesystemCache.Track> coreTracks)
     {
       MusicDrive = musicDrive;
       FullPath = fullPath;
 
-      foreach (var trackPath in trackPaths)
+      foreach (var coreTrack in coreTracks)
       {
-        var track = new Track(this, trackPath);
+        var track = new Track(this, coreTrack);
         _tracks.Add(track);
 
-        MusicDrive.TrackByFullPath[trackPath] = track;
+        MusicDrive.TrackByFullPath[coreTrack.FullPath] = track;
       }
     }
 
@@ -87,22 +88,30 @@ namespace BlueAndMeManager.ViewModel
       return Path.GetFileName(FullPath);
     }
 
-    public void UpdateTracks(LinkedList<string> newTrackPaths)
+    public void UpdateTracks(LinkedList<FilesystemCache.Track> newCoreTracks)
     {
-      _tracks.RemoveWhere(x => !newTrackPaths.Contains(x.FullPath));
+      _tracks.RemoveWhere(track => !newCoreTracks.Select(coreTrack => coreTrack.FullPath).Contains(track.FullPath));
 
       var lastIdx = 0;
-      foreach (var newTrackPath in newTrackPaths)
+      foreach (var newCoreTrack in newCoreTracks)
       {
-        var track = _tracks.Find(x => x.FullPath == newTrackPath);
+        var track = _tracks.Find(x => x.FullPath == newCoreTrack.FullPath);
         if (track == null)
         {
-          track = new Track(this, newTrackPath);
+          track = new Track(this, newCoreTrack);
           _tracks.Insert(lastIdx, track);
         }
-        MusicDrive.TrackByFullPath[newTrackPath] = track;
+        MusicDrive.TrackByFullPath[newCoreTrack.FullPath] = track;
 
         lastIdx++;
+      }
+    }
+
+    public void RemoveTracks(IEnumerable<Track> tracksToDelete)
+    {
+      foreach (var track in tracksToDelete)
+      {
+        _tracks.Remove(track);
       }
     }
   }

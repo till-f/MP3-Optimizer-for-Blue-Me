@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Windows;
+using BlueAndMeManager.Core;
 using Extensions.Core.Helpers;
 using static WpfExtensions.DependencyProperties.DependencyPropertyRegistrar<BlueAndMeManager.ViewModel.Track>;
 
@@ -13,6 +14,16 @@ namespace BlueAndMeManager.ViewModel
     public string FullPath { get; }
 
     public string RelativePath { get; }
+
+    public string Album { get; }
+
+    public string Artist { get; }
+
+    public string Title { get; }
+
+    public uint TrackNr { get; }
+
+    public string Genre { get; }
 
     public IEnumerable<Track> Tracks => new[] { this };
 
@@ -29,11 +40,18 @@ namespace BlueAndMeManager.ViewModel
       get => (EPlaylistContainmentState)GetValue(PlaylistContainmentStateProperty);
     }
 
-    public Track(MusicFolder musicFolder, string fullPath)
+    public Track(MusicFolder musicFolder, FilesystemCache.Track coreTrack)
     {
       MusicFolder = musicFolder;
-      FullPath = fullPath;
-      RelativePath = Utilities.GetRelativePath(musicFolder.MusicDrive.FullPath, fullPath);
+
+      FullPath = coreTrack.FullPath;
+      Album = coreTrack.Album;
+      Artist = coreTrack.Artist;
+      Title = coreTrack.Title;
+      TrackNr = coreTrack.TrackNr;
+      Genre = coreTrack.Genre;
+
+      RelativePath = Utilities.GetRelativePath(musicFolder.MusicDrive.FullPath, coreTrack.FullPath);
     }
 
     public void UpdatePlaylistContainmentState()
@@ -43,7 +61,7 @@ namespace BlueAndMeManager.ViewModel
 
     public override string ToString()
     {
-      return Path.GetFileName(FullPath);
+      return $"{TrackNr} - {Artist} - {Title}";
     }
   }
 }

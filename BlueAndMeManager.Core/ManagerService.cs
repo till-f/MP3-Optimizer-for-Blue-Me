@@ -2,20 +2,31 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BlueAndMeManager.Core
 {
   public class FilesystemCache
   {
-    public Dictionary<string, LinkedList<string>> MusicCache { get; } = new();
+    public class Track
+    {
+      public string FullPath { get; set; }
+      public string Album { get; set; }
+      public string Artist { get; set; }
+      public string Title { get; set; }
+      public uint TrackNr { get; set; }
+      public string Genre { get; set; }
+    }
+
+    public Dictionary<string, LinkedList<Track>> MusicCache { get; } = new();
 
     public Dictionary<string, LinkedList<string>> PlaylistCache { get; } = new();
   }
 
   public class ManagerService
   {
-    public static bool CancelRequested { get; set; }
+    public static CancellationTokenSource CancelSource { get; set; }
 
     public static Task<FilesystemCache> BuildCacheAsync(string rootPath, bool skipMissingTracks)
     {
@@ -24,12 +35,29 @@ namespace BlueAndMeManager.Core
         var cache = new FilesystemCache();
         try
         {
-          MessagePresenter.UpdateProgress(-1, "Reading music files...");
+          MessagePresenter.UpdateProgress(0, "Reading music files...");
+
+          var allFilesCount = Directory.GetFiles(rootPath, "*.mp3", SearchOption.AllDirectories).Length;
+          var processedFilesCount = 0;
+
           foreach (var musicFolder in Directory.GetDirectories(rootPath))
           {
-            LinkedList<string> tracks = new();
-            foreach (var track in Directory.GetFiles(musicFolder, "*.mp3", SearchOption.AllDirectories))
+            LinkedList<FilesystemCache.Track> tracks = new();
+            foreach (var mp3FilePath in Directory.GetFiles(musicFolder, "*.mp3", SearchOption.AllDirectories))
             {
+              MessagePresenter.UpdateProgress(processedFilesCount++ / allFilesCount * 100, $"Reading file {mp3FilePath}...");
+
+              var mp3File = TagLib.File.Create(mp3FilePath);
+
+              var track = new FilesystemCache.Track()
+              {
+                FullPath = mp3FilePath,
+                Album = mp3File.Tag.Album,
+                Artist = mp3File.Tag.FirstPerformer,
+                Title = mp3File.Tag.Title,
+                TrackNr = mp3File.Tag.Track,
+                Genre = mp3File.Tag.FirstGenre
+              };
               tracks.AddLast(track);
             }
 
@@ -61,6 +89,8 @@ namespace BlueAndMeManager.Core
 
     public static Task DeleteFilesAsync(string rootPath, IEnumerable<string> filesToDelete)
     {
+      CancelSource = new CancellationTokenSource();
+
       var task = new Task(() =>
       {
         try
@@ -70,7 +100,7 @@ namespace BlueAndMeManager.Core
 
           foreach (var trackPath in trackPaths)
           {
-            if (CancelRequested)
+            if (CancelSource != null && CancelSource.IsCancellationRequested)
             {
               return;
             }
@@ -89,7 +119,7 @@ namespace BlueAndMeManager.Core
         {
           MessagePresenter.UpdateProgress(0, "Idle");
         }
-      });
+      }, CancelSource.Token);
 
       task.Start();
       return task;

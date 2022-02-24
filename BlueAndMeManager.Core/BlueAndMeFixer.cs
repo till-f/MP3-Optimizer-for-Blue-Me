@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Core.Helpers;
 using TagLib;
@@ -25,7 +26,8 @@ namespace BlueAndMeManager.Core
 
     public Task<Dictionary<string, string>> RunAsync()
     {
-      var task = new Task<Dictionary<string, string>>(Run);
+      ManagerService.CancelSource = new CancellationTokenSource();
+      var task = new Task<Dictionary<string, string>>(Run, ManagerService.CancelSource.Token);
       task.Start();
       return task;
     }
@@ -42,7 +44,7 @@ namespace BlueAndMeManager.Core
 
         foreach (var mp3FilePath in _mp3FilePaths)
         {
-          if (ManagerService.CancelRequested)
+          if (ManagerService.CancelSource != null && ManagerService.CancelSource.IsCancellationRequested)
           {
             return movedFiles;
           }
@@ -53,8 +55,8 @@ namespace BlueAndMeManager.Core
 
           var mp3File = TagLib.File.Create(mp3FilePath);
 
-          var album = SanitizeName(mp3File.Tag.Album, 30);
-          var artist = SanitizeName(mp3File.Tag.FirstPerformer, 30);
+          var album = SanitizeName(mp3File.Tag.Album, 14);
+          var artist = SanitizeName(mp3File.Tag.FirstPerformer, 14);
           var title = SanitizeName(mp3File.Tag.Title, 30);
           var track = mp3File.Tag.Track;
           var genre = mp3File.Tag.FirstGenre;

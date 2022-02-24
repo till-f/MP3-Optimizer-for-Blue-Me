@@ -192,7 +192,7 @@ namespace BlueAndMeManager.View
 
     private void CancelWork_Clicked(object sender, RoutedEventArgs e)
     {
-      ManagerService.CancelRequested = true;
+      ManagerService.CancelSource?.Cancel();
       CanCancel = false;
     }
 
@@ -420,11 +420,28 @@ namespace BlueAndMeManager.View
       }
 
       var rootPath = MusicDrive.FullPath;
-      var task = ManagerService.DeleteFilesAsync(rootPath, MusicDrive.TracksInScope.Select(x => x.FullPath).ToList());
-      task.OnCompletion(() =>
+      var tracksToDelete = MusicDrive.TracksInScope.ToList();
+      var deleteTask = ManagerService.DeleteFilesAsync(rootPath, tracksToDelete.Select(x => x.FullPath));
+      deleteTask.OnCompletion(Dispatcher, () =>
       {
-        var rebuildTask = RebuildCacheAsync(rootPath, false, Dispatcher);
-        rebuildTask.OnCompletion(Dispatcher, () => IsLocked = false);
+        if (deleteTask.IsCanceled)
+        {
+          var rebuildTask = RebuildCacheAsync(rootPath, false, Dispatcher);
+          rebuildTask.OnCompletion(Dispatcher, () => IsLocked = false);
+        }
+        else
+        {
+          foreach (var track in tracksToDelete)
+          {
+            MusicDrive.TrackByFullPath.Remove(track.FullPath);
+          }
+          foreach (var folder in MusicDrive.MusicFolders)
+          {
+            folder.RemoveTracks(tracksToDelete);
+          }
+          MusicDrive.RefreshTracks();
+          IsLocked = false;
+        }
       });
     }
 
@@ -434,7 +451,7 @@ namespace BlueAndMeManager.View
       {
         window.CanCancel = false;
       }
-      ManagerService.CancelRequested = false;
+      ManagerService.CancelSource = null;
 
       window.CoerceValue(CancelButtonVisibilityProperty);
     }
