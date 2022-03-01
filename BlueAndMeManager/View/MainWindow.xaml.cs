@@ -446,6 +446,7 @@ namespace BlueAndMeManager.View
             folder.RemoveTracks(tracksToDelete);
           }
           MusicDrive.RefreshTracks();
+          MusicDrive.UpdatePlaylistContainmentStates(false);
           IsLocked = false;
         }
       });
