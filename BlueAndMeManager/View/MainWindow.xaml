@@ -71,16 +71,26 @@
                     <RowDefinition></RowDefinition>
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
-              <Button VerticalAlignment="Top"
-                      HorizontalAlignment="Right" 
-                      Padding="10,5" 
-                      Content="Apply Blue&amp;Me Fixes"
-                      IsEnabled="{Binding FullPath, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
-                      Click="FixTagsButton_Click" />
-              <CheckBox Grid.Row="1"
+                <Button VerticalAlignment="Top"
                         HorizontalAlignment="Right" 
-                        Name="MinimizeFileNamesCheckBox"
-                        Margin="0, 5, 2, 5" VerticalAlignment="Center" Content="Minimize file names" Checked="MinimizeFileNamesCheckBox_Checked" />
+                        Padding="10,5" 
+                        Content="Apply Blue&amp;Me Fixes"
+                        IsEnabled="{Binding FullPath, FallbackValue=false, Converter={StaticResource ObjectRefToBooleanConverter}}"
+                        Click="FixTagsButton_Click" />
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <CheckBox Name="RenameFilesCheckBox"
+                              Margin="0, 5, 2, 5" 
+                              VerticalAlignment="Center" 
+                              IsChecked="true"
+                              Content="Rename"
+                              ToolTip="Renames all files and folders to a short numeric name (001, 002, ...).&#x0a;Needed for long playlists (faster loading and prevents crashing of Blue&amp;Me with lists containing 1000+ tracks)." />
+                    <CheckBox Name="QuickRunCheckBox"
+                              IsEnabled="{Binding ElementName=RenameFilesCheckBox, Path=IsChecked}"
+                              Margin="0, 5, 2, 5" 
+                              VerticalAlignment="Center" 
+                              Content="Quick Run"
+                              ToolTip="Only files that have not yet been renamed will be processed.&#x0a;Consider to keep unchecked if a lot of files have been removed (skipped/missing numbers will not be filled up)." />
+                </StackPanel>
             </Grid>
         </Grid>
         <Grid DockPanel.Dock="Bottom">

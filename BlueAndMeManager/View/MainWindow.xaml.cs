@@ -162,17 +162,15 @@ namespace BlueAndMeManager.View
         return;
       }
 
-      if (MinimizeFileNamesCheckBox.IsChecked == true)
+      if (RenameFilesCheckBox.IsChecked == true)
       {
-        // there must not be a selection when running in the MinimizeFileNames mode
         FoldersBox.SelectedItems.Clear();
-        TracksBox.SelectedItems.Clear();
       }
 
-      var selectedTracks = MusicDrive.TracksInScope;
+      var fixer = new BlueAndMeFixer(MusicDrive.FullPath, MusicDrive.TracksInScope.Select(x => x.FullPath), RenameFilesCheckBox.IsChecked == true, QuickRunCheckBox.IsChecked == true);
 
       var result =MessageBox.Show(this,
-        $"CAUTION! This will overwrite the meta information (ID3 tags) of the {selectedTracks.Count()} selected files. Information may be removed or altered to fulfill Blue&Me restrictions!\n\nYour files might be renamed, but the loaded playlists will be updated accordingly.\n\nDo you want to continue?",
+        $"CAUTION! This will overwrite the meta information (ID3 tags)! Some information may be removed or altered to fulfill Blue&Me restrictions!\n\n{fixer.AffectedFilesCount} files will be affected.\n\nDo you want to continue?",
         "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 
       if (result != MessageBoxResult.Yes)
@@ -184,7 +182,6 @@ namespace BlueAndMeManager.View
       CanCancel = true;
       var rootPath = MusicDrive.FullPath;
       var playlists = MusicDrive.CorePlaylists;
-      var fixer = new BlueAndMeFixer(rootPath, selectedTracks.Select(x => x.FullPath), MinimizeFileNamesCheckBox.IsChecked == true);
       var fixerTask = fixer.RunAsync();
       fixerTask.OnCompletion(() =>
       {
@@ -498,12 +495,6 @@ namespace BlueAndMeManager.View
       {
         MessageBox.Show(this, message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
       });
-    }
-
-    private void MinimizeFileNamesCheckBox_Checked(object sender, RoutedEventArgs e)
-    {
-      FoldersBox.SelectedItems.Clear();
-      TracksBox.SelectedItems.Clear();
     }
   }
 }
