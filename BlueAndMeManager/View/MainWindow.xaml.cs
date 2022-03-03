@@ -170,7 +170,7 @@ namespace BlueAndMeManager.View
       var fixer = new BlueAndMeFixer(MusicDrive.FullPath, MusicDrive.TracksInScope.Select(x => x.FullPath), RenameFilesCheckBox.IsChecked == true, QuickRunCheckBox.IsChecked == true);
 
       var result =MessageBox.Show(this,
-        $"CAUTION! This will overwrite the meta information (ID3 tags)! Some information may be removed or altered to fulfill Blue&Me restrictions!\n\n{fixer.AffectedFilesCount} files will be affected.\n\nDo you want to continue?",
+        $"CAUTION! This will overwrite the song information (ID3 tags). Information may be removed or altered to fulfill Blue&Me restrictions!\n\n{fixer.AffectedFilesCount} files will be affected.\n\nDo you want to continue?",
         "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 
       if (result != MessageBoxResult.Yes)

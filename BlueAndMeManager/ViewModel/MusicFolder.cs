@@ -98,6 +98,10 @@ namespace BlueAndMeManager.ViewModel
           track = new Track(this, newCoreTrack);
           _tracks.Insert(lastIdx, track);
         }
+        else
+        {
+          track.UpdateMetaData(newCoreTrack);
+        }
         MusicDrive.TrackByFullPath[newCoreTrack.FullPath] = track;
 
         lastIdx++;

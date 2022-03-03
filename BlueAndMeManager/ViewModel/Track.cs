@@ -19,15 +19,15 @@ namespace BlueAndMeManager.ViewModel
 
     public string RelativePath { get; }
 
-    public string Album { get; }
+    public string Album { get; private set; }
 
-    public string Artist { get; }
+    public string Artist { get; private set; }
 
-    public string Title { get; }
+    public string Title { get; private set; }
 
-    public uint TrackNr { get; }
+    public uint TrackNr { get; private set; }
 
-    public string Genre { get; }
+    public string Genre { get; private set; }
 
     public IEnumerable<Track> Tracks => new[] { this };
 
@@ -56,6 +56,15 @@ namespace BlueAndMeManager.ViewModel
       Genre = coreTrack.Genre;
 
       RelativePath = Utilities.GetRelativePath(musicFolder.MusicDrive.FullPath, coreTrack.FullPath);
+    }
+
+    public void UpdateMetaData(FilesystemCache.Track coreTrack)
+    {
+      Album = coreTrack.Album;
+      Artist = coreTrack.Artist;
+      Title = coreTrack.Title;
+      TrackNr = coreTrack.TrackNr;
+      Genre = coreTrack.Genre;
     }
 
     public void UpdatePlaylistContainmentState()
