@@ -101,9 +101,9 @@ namespace BlueAndMeManager.Core
             currentFile = trackPath;
             var mp3File = TagLib.File.Create(trackPath);
 
-            var album = SanitizeName(mp3File.Tag.Album ?? String.Empty, 14);
-            var artist = SanitizeName(mp3File.Tag.FirstPerformer ?? String.Empty, 14);
-            var title = SanitizeName(mp3File.Tag.Title ?? String.Empty, 30);
+            var album = SanitizeName(mp3File.Tag.Album, 14);
+            var artist = SanitizeName(mp3File.Tag.FirstPerformer, 14);
+            var title = SanitizeName(mp3File.Tag.Title, 30);
             var track = mp3File.Tag.Track;
             var genre = mp3File.Tag.FirstGenre;
 
