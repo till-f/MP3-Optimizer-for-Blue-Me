@@ -301,6 +301,11 @@ namespace BlueAndMeManager.Core
 
     private static string SanitizeName(string fullCharsetString, int maxLength = 0)
     {
+      if (string.IsNullOrWhiteSpace(fullCharsetString))
+      {
+        return string.Empty;
+      }
+
       var sanitizedString = fullCharsetString
         .SanitizeByMap()                  // applies proper replacements like "ä -> ae"
         .SanitizeByEncoding()             // just in case the map is incomplete
