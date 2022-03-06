@@ -119,9 +119,9 @@ namespace BlueAndMeManager.Core
             File.WriteAllLines(fullPath, entryPaths);
           }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          MessagePresenter.ShowError(e.Message);
+          MessagePresenter.ShowAndLogError($"Could not save playlist '{fullPath}': {ex.Message}", ex);
         }
         finally
         {
@@ -146,9 +146,9 @@ namespace BlueAndMeManager.Core
 
         return true;
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        MessagePresenter.ShowError(e.Message);
+        MessagePresenter.ShowAndLogError($"Could not delete '{fullPath}': {ex.Message}", ex);
         return false;
       }
       finally

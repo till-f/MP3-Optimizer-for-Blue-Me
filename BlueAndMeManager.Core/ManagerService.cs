@@ -72,9 +72,9 @@ namespace BlueAndMeManager.Core
 
           return cache;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          MessagePresenter.ShowError(e.Message);
+          MessagePresenter.ShowAndLogError($"Could not build cache: {ex.Message}", ex);
           return null;
         }
         finally
@@ -111,9 +111,9 @@ namespace BlueAndMeManager.Core
 
           CleanupFolders(rootPath);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          MessagePresenter.ShowError(e.Message);
+          MessagePresenter.ShowAndLogError($"Could not delete selected files: {ex.Message}", ex);
         }
         finally
         {
@@ -145,7 +145,7 @@ namespace BlueAndMeManager.Core
 
       if (errors)
       {
-        MessagePresenter.ShowError($"Could not remove obsolete folders. You may have to delete some folders manually.");
+        MessagePresenter.ShowAndLogError($"Could not remove obsolete folders. You may have to delete some folders manually.", null);
       }
     }
   }

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace BlueAndMeManager.Core
 {
@@ -18,9 +19,15 @@ namespace BlueAndMeManager.Core
       _instance = new MessagePresenter(onProgress, onError);
     }
 
-    public static void ShowError(string message)
+    public static void ShowAndLogError(string message, Exception ex)
     {
+#if DEBUG
       Debug.Print($"Error: {message}");
+#endif
+
+      Logger.LogError(message, ex);
+
+      message += $"{Environment.NewLine}{Environment.NewLine}For details see log file: '{Logger.LogFilePath}'";
       _instance?._onError.Invoke(message);
     }
 

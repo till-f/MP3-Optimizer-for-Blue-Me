@@ -173,9 +173,9 @@ namespace BlueAndMeManager.Core
 
         return movedFiles;
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        MessagePresenter.ShowError($"Could not convert file '{currentFile}': {e.Message}");
+        MessagePresenter.ShowAndLogError($"Could not convert file '{currentFile}': {ex.Message}", ex);
         return movedFiles;
       }
       finally
@@ -212,7 +212,7 @@ namespace BlueAndMeManager.Core
 
       if (errors)
       {
-        MessagePresenter.ShowError($"Could not restore all temporarily moved files. Please move remaining files manually from from '{TmpFolderName}'.");
+        MessagePresenter.ShowAndLogError($"Could not restore all temporarily moved files. Please move remaining files manually from from '{TmpFolderName}'.", null);
       }
       else
       {
@@ -222,7 +222,7 @@ namespace BlueAndMeManager.Core
         }
         catch (Exception ex)
         {
-          MessagePresenter.ShowError($"Could not delete '{TmpFolderName}' folder: {ex.Message}");
+          MessagePresenter.ShowAndLogError($"Could not delete '{TmpFolderName}' folder: {ex.Message}", ex);
         }
       }
     }

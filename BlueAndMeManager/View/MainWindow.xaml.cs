@@ -70,11 +70,11 @@ namespace BlueAndMeManager.View
     {
       if (e?.Exception?.InnerException is Exception innerExeption)
       {
-        MessagePresenter.ShowError(innerExeption.Message);
+        MessagePresenter.ShowAndLogError($"Unhandled exception {innerExeption.GetType().Name} in background task: {innerExeption.Message}", innerExeption);
       }
       else
       {
-        MessagePresenter.ShowError(e?.Exception?.Message);
+        MessagePresenter.ShowAndLogError($"Unhandled exception {e?.Exception?.GetType().Name} in background task: {e?.Exception?.Message}", e?.Exception);
       }
     }
 
