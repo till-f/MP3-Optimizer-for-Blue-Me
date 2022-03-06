@@ -19,7 +19,7 @@ namespace BlueAndMeManager.Core
       _instance = new MessagePresenter(onProgress, onError);
     }
 
-    public static void ShowAndLogError(string message, Exception ex)
+    public static void ShowAndLogError(string message, Exception ex = null)
     {
 #if DEBUG
       Debug.Print($"Error: {message}");

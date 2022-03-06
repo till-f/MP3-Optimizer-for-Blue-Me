@@ -33,6 +33,7 @@ namespace BlueAndMeManager.Core
       var task = new Task<FilesystemCache>(() =>
       {
         var cache = new FilesystemCache();
+        var errorCount = 0;
         try
         {
           MessagePresenter.UpdateProgress(0, "Reading music files...");
@@ -46,45 +47,70 @@ namespace BlueAndMeManager.Core
             foreach (var mp3FilePath in Directory.GetFiles(musicFolder, "*.mp3", SearchOption.AllDirectories))
             {
               MessagePresenter.UpdateProgress(processedFilesCount++ / allFilesCount * 100, $"Reading file {mp3FilePath}...");
-
-              var mp3File = TagLib.File.Create(mp3FilePath);
-
-              var track = new FilesystemCache.Track()
+              
+              try
               {
-                FullPath = mp3FilePath,
-                Album = mp3File.Tag.Album,
-                Artist = mp3File.Tag.FirstPerformer,
-                Title = mp3File.Tag.Title,
-                TrackNr = mp3File.Tag.Track,
-                Genre = mp3File.Tag.FirstGenre
-              };
-              tracks.AddLast(track);
+                tracks.AddLast(CreateFilesystemCacheTrack(mp3FilePath));
+              }
+              catch (Exception ex)
+              {
+                errorCount++;
+                Logger.LogError($"Error reading mp3 file '{mp3FilePath}'", ex);
+              }
             }
 
             cache.MusicCache[musicFolder] = tracks;
           }
 
           MessagePresenter.UpdateProgress(-1, "Reading playlists...");
-          foreach (var playlist in Directory.GetFiles(rootPath, "*.m3u", SearchOption.TopDirectoryOnly))
+          foreach (var playlistFilePath in Directory.GetFiles(rootPath, "*.m3u", SearchOption.TopDirectoryOnly))
           {
-            cache.PlaylistCache[playlist] = PlaylistService.ReadM3U(rootPath, playlist, skipMissingTracks);
+            try
+            {
+              cache.PlaylistCache[playlistFilePath] = PlaylistService.ReadM3U(rootPath, playlistFilePath, skipMissingTracks);
+            }
+            catch (Exception ex)
+            {
+              errorCount++;
+              Logger.LogError($"Error reading playlist file '{playlistFilePath}'", ex);
+            }
           }
 
           return cache;
         }
-        catch (Exception ex)
+        catch
         {
-          MessagePresenter.ShowAndLogError($"Could not build cache: {ex.Message}", ex);
+          errorCount++;
           return null;
         }
         finally
         {
           MessagePresenter.UpdateProgress(0, "Idle");
+
+          if (errorCount > 0)
+          {
+            MessagePresenter.ShowAndLogError($"{errorCount} error(s) occured while reading all files. Some files may have been skipped. You may not be able to proceed.");
+          }
         }
       });
 
       task.Start();
       return task;
+    }
+
+    private static FilesystemCache.Track CreateFilesystemCacheTrack(string mp3FilePath)
+    {
+      var mp3File = TagLib.File.Create(mp3FilePath);
+
+      return new FilesystemCache.Track()
+      {
+        FullPath = mp3FilePath,
+        Album = mp3File.Tag.Album,
+        Artist = mp3File.Tag.FirstPerformer,
+        Title = mp3File.Tag.Title,
+        TrackNr = mp3File.Tag.Track,
+        Genre = mp3File.Tag.FirstGenre
+      };
     }
 
     public static Task DeleteFilesAsync(string rootPath, IEnumerable<string> filesToDelete)
@@ -145,7 +171,7 @@ namespace BlueAndMeManager.Core
 
       if (errors)
       {
-        MessagePresenter.ShowAndLogError($"Could not remove obsolete folders. You may have to delete some folders manually.", null);
+        MessagePresenter.ShowAndLogError($"Could not remove obsolete folders. You may have to delete some folders manually.");
       }
     }
   }

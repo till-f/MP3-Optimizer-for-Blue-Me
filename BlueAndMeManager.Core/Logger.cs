@@ -13,7 +13,7 @@ namespace BlueAndMeManager.Core
 
     public static string LogFilePath => _instance._logFilePath;
 
-    public static void LogError(string message, Exception ex)
+    public static void LogError(string message, Exception ex = null)
     {
       _instance.LogErrorInternal(message, ex);
     }

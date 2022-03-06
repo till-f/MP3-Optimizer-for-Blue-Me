@@ -75,7 +75,7 @@ namespace BlueAndMeManager.Core
         return movedFiles;
       }
 
-      string currentFile = "";
+      var errorCount = 0;
       try
       {
         var processedFilesCount = 0;
@@ -98,72 +98,15 @@ namespace BlueAndMeManager.Core
             MessagePresenter.UpdateProgress(processedFilesCount++ / (double)_affectedFilesCount * 100, $"Processing {trackPath}...");
 
             trackNumber = GetNextNumber(trackNumber, trackPath, ESearchLevel.Track);
-            currentFile = trackPath;
-            var mp3File = TagLib.File.Create(trackPath);
 
-            var album = SanitizeName(mp3File.Tag.Album, 14);
-            var artist = SanitizeName(mp3File.Tag.FirstPerformer, 14);
-            var title = SanitizeName(mp3File.Tag.Title, 30);
-            var track = mp3File.Tag.Track;
-            var genre = mp3File.Tag.FirstGenre;
-
-            if (string.IsNullOrWhiteSpace(album))
+            try
             {
-              album = $"Album {folderNumber}";
+              ConvertFile(trackPath, trackNumber, folderNumber, movedFiles);
             }
-            if (string.IsNullOrWhiteSpace(artist))
+            catch (Exception ex)
             {
-              artist = "Unknown";
-            }
-            if (string.IsNullOrWhiteSpace(title))
-            {
-              title = SanitizeName(Path.GetFileNameWithoutExtension(trackPath), 30);
-            }
-            if (track == 0)
-            {
-              track = trackNumber;
-            }
-
-            mp3File.RemoveTags(TagTypes.AllTags);
-
-            var id3V1 = mp3File.GetTag(TagTypes.Id3v1, true);
-            id3V1.Album = album;
-            id3V1.Title = title;
-            id3V1.Track = track;
-            if (!string.IsNullOrWhiteSpace(artist))
-            {
-              id3V1.Performers = new[] { artist };
-            }
-            if (!string.IsNullOrWhiteSpace(genre))
-            {
-              id3V1.Genres = new[] { genre };
-            }
-
-            mp3File.Save();
-
-            if (_opMode != EOpMode.OnlyTags)
-            {
-              string tmpRootPath = _rootPath;
-              if (_opMode == EOpMode.RenameAll)
-              {
-                tmpRootPath = Path.Combine(_rootPath, TmpFolderName);
-              }
-              var newFolderName = folderNumber.ToString("D3");
-              var newFileName = trackNumber.ToString("D3") + ".mp3";
-              var tmpFolderPath = Path.Combine(tmpRootPath, newFolderName);
-              var tmpFilePath = Path.Combine(tmpFolderPath, newFileName);
-
-              if (trackPath != tmpFilePath)
-              {
-                if (!Directory.Exists(tmpFolderPath))
-                {
-                  Directory.CreateDirectory(tmpFolderPath);
-                }
-                File.Move(trackPath, tmpFilePath);
-                var oldRelPath = Utilities.GetRelativePath(_rootPath, trackPath);
-                var newRelPath = Utilities.GetRelativePath(tmpRootPath, tmpFilePath);
-                movedFiles.Add(oldRelPath, newRelPath);
-              }
+              errorCount++;
+              Logger.LogError($"Error while processing mp3 file '{trackPath}'", ex);
             }
           }
         }
@@ -173,15 +116,89 @@ namespace BlueAndMeManager.Core
 
         return movedFiles;
       }
-      catch (Exception ex)
+      catch
       {
-        MessagePresenter.ShowAndLogError($"Could not convert file '{currentFile}': {ex.Message}", ex);
         return movedFiles;
       }
       finally
       {
         RestoreTemporarilyMovedFilesIfNeeded();
         MessagePresenter.UpdateProgress(0, "Idle");
+
+        if (errorCount > 0)
+        {
+          MessagePresenter.ShowAndLogError($"Errors occured while processing the files. {errorCount} file(s) may have been skipped.");
+        }
+      }
+    }
+
+    public void ConvertFile(string trackPath, uint trackNumber, uint folderNumber, Dictionary<string, string> movedFiles)
+    {
+      var mp3File = TagLib.File.Create(trackPath);
+
+      var album = SanitizeName(mp3File.Tag.Album, 14);
+      var artist = SanitizeName(mp3File.Tag.FirstPerformer, 14);
+      var title = SanitizeName(mp3File.Tag.Title, 30);
+      var track = mp3File.Tag.Track;
+      var genre = mp3File.Tag.FirstGenre;
+
+      if (string.IsNullOrWhiteSpace(album))
+      {
+        album = $"Album {folderNumber}";
+      }
+      if (string.IsNullOrWhiteSpace(artist))
+      {
+        artist = "Unknown";
+      }
+      if (string.IsNullOrWhiteSpace(title))
+      {
+        title = SanitizeName(Path.GetFileNameWithoutExtension(trackPath), 30);
+      }
+      if (track == 0)
+      {
+        track = trackNumber;
+      }
+
+      mp3File.RemoveTags(TagTypes.AllTags);
+
+      var id3V1 = mp3File.GetTag(TagTypes.Id3v1, true);
+      id3V1.Album = album;
+      id3V1.Title = title;
+      id3V1.Track = track;
+      if (!string.IsNullOrWhiteSpace(artist))
+      {
+        id3V1.Performers = new[] { artist };
+      }
+      if (!string.IsNullOrWhiteSpace(genre))
+      {
+        id3V1.Genres = new[] { genre };
+      }
+
+      mp3File.Save();
+
+      if (_opMode != EOpMode.OnlyTags)
+      {
+        string tmpRootPath = _rootPath;
+        if (_opMode == EOpMode.RenameAll)
+        {
+          tmpRootPath = Path.Combine(_rootPath, TmpFolderName);
+        }
+        var newFolderName = folderNumber.ToString("D3");
+        var newFileName = trackNumber.ToString("D3") + ".mp3";
+        var tmpFolderPath = Path.Combine(tmpRootPath, newFolderName);
+        var tmpFilePath = Path.Combine(tmpFolderPath, newFileName);
+
+        if (trackPath != tmpFilePath)
+        {
+          if (!Directory.Exists(tmpFolderPath))
+          {
+            Directory.CreateDirectory(tmpFolderPath);
+          }
+          File.Move(trackPath, tmpFilePath);
+          var oldRelPath = Utilities.GetRelativePath(_rootPath, trackPath);
+          var newRelPath = Utilities.GetRelativePath(tmpRootPath, tmpFilePath);
+          movedFiles.Add(oldRelPath, newRelPath);
+        }
       }
     }
 
@@ -194,7 +211,7 @@ namespace BlueAndMeManager.Core
         return;
       }
 
-      var errors = false;
+      var errorCount = 0;
       MessagePresenter.UpdateProgress(-1, "Restore temporarily moved files...");
       foreach (var oldDirectoryPath in Directory.GetDirectories(tmpRootPath, "*", SearchOption.AllDirectories))
       {
@@ -206,13 +223,13 @@ namespace BlueAndMeManager.Core
         }
         catch
         {
-          errors = true;
+          errorCount++;
         }
       }
 
-      if (errors)
+      if (errorCount > 0)
       {
-        MessagePresenter.ShowAndLogError($"Could not restore all temporarily moved files. Please move remaining files manually from from '{TmpFolderName}'.", null);
+        MessagePresenter.ShowAndLogError($"{errorCount} errors occured while restoring temporarily moved files. Please manually move files from '{TmpFolderName}' to '{_rootPath}'.");
       }
       else
       {
