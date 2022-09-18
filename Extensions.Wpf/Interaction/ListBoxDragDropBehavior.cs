@@ -14,6 +14,13 @@ namespace Extensions.Wpf.Interaction
       BetweenItems
     }
 
+    public enum EDropPosition
+    {
+      OnItem,
+      Above,
+      Below
+    }
+
     private readonly ListBox _listBox;
 
     // only used for DragSource
@@ -24,7 +31,7 @@ namespace Extensions.Wpf.Interaction
     private ListBoxItem _lastMouseDownAlreadySelectedItem;
 
     // only used for DropTarget
-    private Action<ListBoxItem, DragEventArgs> _onDrop;
+    private Action<ListBoxItem, EDropPosition, DragEventArgs> _onDrop;
     private EDropTargetKind _dropTargetKind;
 
     public ListBoxDragDropBehavior(ListBox listBox)
@@ -47,7 +54,7 @@ namespace Extensions.Wpf.Interaction
       return this;
     }
 
-    public ListBoxDragDropBehavior ApplyDropTargetBehaviorToItems(Action<ListBoxItem, DragEventArgs> onDrop, EDropTargetKind dropTargetKind = EDropTargetKind.OnItem)
+    public ListBoxDragDropBehavior ApplyDropTargetBehaviorToItems(Action<ListBoxItem, EDropPosition, DragEventArgs> onDrop, EDropTargetKind dropTargetKind = EDropTargetKind.OnItem)
     {
       _onDrop = onDrop;
       _dropTargetKind = dropTargetKind;
@@ -207,7 +214,10 @@ namespace Extensions.Wpf.Interaction
 
       e.Handled = true;
       item.BorderBrush = new SolidColorBrush(Colors.Transparent);
-      _onDrop.Invoke(item, e);
+
+      var pos = e.GetPosition(item);
+      var ePos = GetDropPosition(_dropTargetKind, pos.Y < item.ActualHeight / 2);
+      _onDrop.Invoke(item, ePos, e);
     }
 
     private void ListBox_DragOver(object sender, DragEventArgs e)
@@ -235,6 +245,16 @@ namespace Extensions.Wpf.Interaction
         //Bottom of visible list, scroll down
         sv.ScrollToVerticalOffset(sv.VerticalOffset + offset);
       }
+    }
+
+    private static EDropPosition GetDropPosition(EDropTargetKind kind, bool isDraggingInUpperHalf)
+    {
+      if (kind == EDropTargetKind.OnItem)
+      {
+        return EDropPosition.OnItem;
+      }
+
+      return isDraggingInUpperHalf ? EDropPosition.Above : EDropPosition.Below;
     }
 
     private static Brush GetBrushForKind(EDropTargetKind kind, bool isDraggingInUpperHalf)

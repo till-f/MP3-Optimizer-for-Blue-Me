@@ -33,7 +33,7 @@ namespace BlueAndMeManager.View
         .ApplyDropTargetBehaviorToItems(PlaylistBox_OnDrop, ListBoxDragDropBehavior.EDropTargetKind.BetweenItems);
     }
 
-    private void PlaylistBox_OnDrop(ListBoxItem targetItem, DragEventArgs e)
+    private void PlaylistBox_OnDrop(ListBoxItem targetItem, ListBoxDragDropBehavior.EDropPosition pos, DragEventArgs e)
     {
       var sourceItem = (ListBoxItem) e.Data.GetData(typeof(ListBoxItem));
 
@@ -66,7 +66,7 @@ namespace BlueAndMeManager.View
 
       // calculate new start position
       var realTargetIndex = PlaylistEntries.IndexOf(targetEntry);
-      if (targetIndex > sourceIndex)
+      if (pos == ListBoxDragDropBehavior.EDropPosition.Below)
       {
         realTargetIndex += 1;
       }

@@ -78,7 +78,7 @@ namespace BlueAndMeManager.View
       }
     }
 
-    private void PlaylistBox_OnDrop(ListBoxItem targetItem, DragEventArgs e)
+    private void PlaylistBox_OnDrop(ListBoxItem targetItem, ListBoxDragDropBehavior.EDropPosition pos, DragEventArgs e)
     {
       if (IsLocked)
       {
